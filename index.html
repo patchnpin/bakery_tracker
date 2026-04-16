@@ -817,12 +817,10 @@ function recipeCardHTML(r,i){
 
   let imgHTML;
   if(!unlocked && !completed) {
-    // locked — always show lock placeholder
+    // locked — try webp, then png, then lock placeholder
     imgHTML=`<div class="card-img-wrap">
-      <div class="card-img-placeholder is-locked">
-        <span style="font-size:2.4rem">🔒</span>
-        <span>Locked</span>
-      </div>
+      <img src="${imgKey(r,'webp')}" alt="${r.name}"
+        onerror="if(this.src.endsWith('.webp')){this.src='${imgKey(r,'png')}';}else{this.parentElement.innerHTML='<div class=\\'card-img-placeholder no-image\\'><span style=\\'font-size:2.4rem\\'>🔒</span><span>Locked</span></div>';}">
     </div>`;
   } else {
     // unlocked or completed — try webp, then png, then cake placeholder
