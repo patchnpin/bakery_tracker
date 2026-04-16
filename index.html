@@ -367,8 +367,7 @@
   .tag-color   { background: var(--white); border: 1.5px solid var(--border-mid); color: var(--text-mid); display:flex; align-items:center; gap:4px; }
   .tag-holiday { background: var(--peach);  color: #904010; }
   .tag-season  { background: var(--mint);   color: #206040; }
-  .tag-fav     { background: #ffd6e8; color: #c0206a; }
-  .tag-ooglay  { background: #f0f0f0; color: #808080; }
+  .tag-other   { background: #ede8f8; color: #5a3aaa; }
   .color-dot { width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
   .card-profit { font-size: 0.72rem; color: var(--text-light); font-weight: 600; margin-top: 1px; }
   .status-badge {
@@ -658,12 +657,8 @@
       </select>
     </div>
     <div class="sidebar-section">
-      <h3>Favorites</h3>
-      <div class="filter-chips">
-        <span class="chip" data-fav="all"    onclick="toggleFav(this)">All</span>
-        <span class="chip" data-fav="<3"     onclick="toggleFav(this)">❤️ Favorites</span>
-        <span class="chip" data-fav="ooglay" onclick="toggleFav(this)">😬 Ooglay</span>
-      </div>
+      <h3>Other Tags</h3>
+      <div class="filter-chips" id="otherTagChips"></div>
     </div>
     <button class="clear-btn" onclick="clearFilters()">✕ Clear all filters</button>
   </div>
@@ -699,20 +694,14 @@
       <button class="toggle-btn" id="btnUnlocked"  onclick="setStatus('unlocked')">🔓 Unlocked</button>
       <button class="toggle-btn" id="btnLocked"    onclick="setStatus('locked')">🔒 Locked</button>
     </div>
-    <div class="modal-section-label">Favorite?</div>
-    <div class="modal-toggles">
-      <button class="toggle-btn" id="btnFav"     onclick="setFav('<3')">❤️ Favorite</button>
-      <button class="toggle-btn" id="btnOoglay"  onclick="setFav('ooglay')">😬 Ooglay</button>
-      <button class="toggle-btn" id="btnNeutral" onclick="setFav('')">— Neutral</button>
-    </div>
     <button class="modal-save" onclick="saveModal()">Save Changes</button>
   </div>
 </div>
 
 <script src="data.js"></script>
 <script>
-let activeTab='recipes',activeStatus='all',activeFav='all';
-let activeColors=new Set(),activeHolidays=new Set(),activeSeasons=new Set();
+let activeTab='recipes',activeStatus='all';
+let activeColors=new Set(),activeHolidays=new Set(),activeSeasons=new Set(),activeOtherTags=new Set();
 let modalIndex=null,modalPending={};
 let overrides={};
 try{overrides=JSON.parse(localStorage.getItem('bs_overrides')||'{}');}catch(e){}
@@ -727,14 +716,19 @@ function init(){
   ['Breads','Brownies','Cake Pops','Candies/Sweets','Coffees','Cold Drinks','Cookies','Cupcakes','Donuts','Hot Chocolates','Hot Teas','Ice Creams','Muffins','Multi Layer Cakes','Pancakes','Pastries','Pies','Puddings/Parfaits','Savory','Single Layer Cakes','Smoothies & Milkshakes','Tarts','Waffles'].forEach(t=>{
     const o=document.createElement('option');o.value=t;o.textContent=t;ts.appendChild(o);
   });
+  // Build Other Tags chips from actual data
+  const allTags=new Set();
+  RECIPES.forEach(r=>{if(r.otherTags)r.otherTags.split('|').filter(Boolean).forEach(t=>allTags.add(t.trim()));});
+  const sortedTags=[...allTags].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+  buildChips('otherTagChips',sortedTags,activeOtherTags,toggleOtherTag,(tag)=>tag==='<3'?'❤️':tag==='ooglay'?'😬 Ooglay':tag);
   updateStats();applyFilters();
 }
 
-function buildChips(id,items,set,fn){
+function buildChips(id,items,set,fn,labelFn){
   const el=document.getElementById(id);
   items.forEach(item=>{
     const c=document.createElement('span');
-    c.className='chip';c.textContent=item;c.dataset.value=item;
+    c.className='chip';c.textContent=labelFn?labelFn(item):item;c.dataset.value=item;
     c.onclick=()=>fn(c,item,set);el.appendChild(c);
   });
 }
@@ -742,6 +736,7 @@ function buildChips(id,items,set,fn){
 function toggleColor(el,val,set){toggleSet(el,val,set);applyFilters();}
 function toggleHoliday(el,val,set){toggleSet(el,val,set);applyFilters();}
 function toggleSeason(el,val,set){toggleSet(el,val,set);applyFilters();}
+function toggleOtherTag(el,val,set){toggleSet(el,val,set);applyFilters();}
 function toggleSet(el,val,set){
   if(set.has(val)){set.delete(val);el.classList.remove('active');}
   else{set.add(val);el.classList.add('active');}
@@ -749,10 +744,6 @@ function toggleSet(el,val,set){
 function toggleStatus(el){
   document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');activeStatus=el.dataset.status;applyFilters();
-}
-function toggleFav(el){
-  document.querySelectorAll('[data-fav]').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');activeFav=el.dataset.fav;applyFilters();
 }
 
 function applyFilters(){
@@ -778,8 +769,10 @@ function applyFilters(){
     if(activeHolidays.size>0&&!activeHolidays.has(r.holiday))return false;
     if(activeSeasons.size>0&&!activeSeasons.has(r.season))return false;
     if(typeVal&&r.type!==typeVal)return false;
-    if(activeFav==='<3'&&r.fav!=='<3')return false;
-    if(activeFav==='ooglay'&&r.fav!=='ooglay')return false;
+    if(activeOtherTags.size>0){
+      const recipeTags=new Set((r.otherTags||'').split('|').map(t=>t.trim()).filter(Boolean));
+      if(![...activeOtherTags].every(t=>recipeTags.has(t)))return false;
+    }
     return true;
   });
   results.sort((a,b)=>{
@@ -815,20 +808,15 @@ function recipeCardHTML(r,i){
       ?`<span class="status-badge status-unlocked">🔓 Unlocked</span>`
       :`<span class="status-badge status-locked">🔒 Locked</span>`;
 
-  let imgHTML;
-  if(!unlocked && !completed) {
-    // locked — try webp, then png, then lock placeholder
-    imgHTML=`<div class="card-img-wrap">
-      <img src="${imgKey(r,'webp')}" alt="${r.name}"
-        onerror="if(this.src.endsWith('.webp')){this.src='${imgKey(r,'png')}';}else{this.parentElement.innerHTML='<div class=\\'card-img-placeholder no-image\\'><span style=\\'font-size:2.4rem\\'>🔒</span><span>Locked</span></div>';}">
-    </div>`;
-  } else {
-    // unlocked or completed — try webp, then png, then cake placeholder
-    imgHTML=`<div class="card-img-wrap">
-      <img src="${imgKey(r,'webp')}" alt="${r.name}"
-        onerror="if(this.src.endsWith('.webp')){this.src='${imgKey(r,'png')}';}else{this.parentElement.innerHTML='<div class=\\'card-img-placeholder no-image\\'><span style=\\'font-size:2.4rem\\'>🍰</span><span>No photo yet</span></div>';}">
-    </div>`;
-  }
+  // All cards: try webp → png → fallback placeholder
+  // Locked fallback = 🔒, unlocked/completed fallback = 🍰
+  const lockedFallback = (!unlocked && !completed)
+    ? `<div class=\\'card-img-placeholder is-locked\\'><span style=\\'font-size:2.4rem\\'>🔒</span><span>Locked</span></div>`
+    : `<div class=\\'card-img-placeholder no-image\\'><span style=\\'font-size:2.4rem\\'>🍰</span><span>No photo yet</span></div>`;
+  const imgHTML=`<div class="card-img-wrap">
+    <img src="${imgKey(r,'webp')}" alt="${r.name}"
+      onerror="if(this.src.endsWith('.webp')){this.src='${imgKey(r,'png')}';}else{this.parentElement.innerHTML='${lockedFallback}';}">
+  </div>`;
 
   const hasImg = true; // always has an img-wrap now
   const noImgClass = ''; // stripe only on no-img cards — we keep stripe for locked fallback
@@ -839,8 +827,10 @@ function recipeCardHTML(r,i){
   if(r.color)tags+=`<span class="meta-tag tag-color"><span class="color-dot dot-${r.color}"></span>${r.color}</span>`;
   if(r.holiday)tags+=`<span class="meta-tag tag-holiday">${r.holiday}</span>`;
   if(r.season)tags+=`<span class="meta-tag tag-season">${r.season}</span>`;
-  if(r.fav==='<3')tags+=`<span class="meta-tag tag-fav">❤️ Fav</span>`;
-  if(r.fav==='ooglay')tags+=`<span class="meta-tag tag-ooglay">😬</span>`;
+  if(r.otherTags)(r.otherTags.split('|').filter(Boolean)).forEach(t=>{
+    const label=t==='<3'?'❤️':t==='ooglay'?'😬 Ooglay':t;
+    tags+=`<span class="meta-tag tag-other">${label}</span>`;
+  });
 
   return`<div class="recipe-card ${cardClass}" onclick="openModal(${i})">
     ${imgHTML}
@@ -854,10 +844,10 @@ function recipeCardHTML(r,i){
 
 function renderOvens(){
   const grid=document.getElementById('ovenGrid');
-  const validOvens=OVENS.filter(o=>o.name&&parseInt(o.totalRecipes)>0);
+  const validOvens=OVENS.filter(o=>o.name&&parseInt(o.recipesTotal)>0);
   validOvens.sort((a,b)=>a.name.localeCompare(b.name));
   grid.innerHTML=validOvens.map(o=>{
-    const total=parseInt(o.totalRecipes)||0,left=parseInt(o.recipesLeft)||0,done=total-left;
+    const total=parseInt(o.recipesTotal)||0,done=parseInt(o.recipesCompleted)||0,left=total-done;
     const pct=total>0?Math.round(done/total*100):0,owned=parseInt(o.total)||0;
     return`<div class="oven-card">
       <div class="oven-name">${o.name}</div>
@@ -887,9 +877,6 @@ function openModal(i){
   document.getElementById('btnCompleted').className='toggle-btn'+(r.completed?' active-completed':'');
   document.getElementById('btnUnlocked').className='toggle-btn'+(r.unlocked&&!r.completed?' active-unlocked':'');
   document.getElementById('btnLocked').className='toggle-btn'+(!r.unlocked?' active-locked':'');
-  document.getElementById('btnFav').className='toggle-btn'+(r.fav==='<3'?' active-fav':'');
-  document.getElementById('btnOoglay').className='toggle-btn'+(r.fav==='ooglay'?' active-ooglay':'');
-  document.getElementById('btnNeutral').className='toggle-btn'+(!r.fav?' active-locked':'');
   document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -900,13 +887,6 @@ function setStatus(s){
   document.getElementById('btnCompleted').className='toggle-btn'+(s==='completed'?' active-completed':'');
   document.getElementById('btnUnlocked').className='toggle-btn'+(s==='unlocked'?' active-unlocked':'');
   document.getElementById('btnLocked').className='toggle-btn'+(s==='locked'?' active-locked':'');
-}
-
-function setFav(val){
-  modalPending.fav=val;
-  document.getElementById('btnFav').className='toggle-btn'+(val==='<3'?' active-fav':'');
-  document.getElementById('btnOoglay').className='toggle-btn'+(val==='ooglay'?' active-ooglay':'');
-  document.getElementById('btnNeutral').className='toggle-btn'+(val===''?' active-locked':'');
 }
 
 function saveModal(){
@@ -955,10 +935,9 @@ function clearFilters(){
   document.getElementById('minHours').value='';
   document.getElementById('maxHours').value='';
   document.getElementById('typeSelect').value='';
-  activeStatus='all';activeColors.clear();activeHolidays.clear();activeSeasons.clear();activeFav='all';
+  activeStatus='all';activeColors.clear();activeHolidays.clear();activeSeasons.clear();activeOtherTags.clear();
   document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.status==='all'));
-  document.querySelectorAll('[data-fav]').forEach(c=>c.classList.remove('active'));
-  document.querySelectorAll('#colorChips .chip,#holidayChips .chip,#seasonChips .chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('#colorChips .chip,#holidayChips .chip,#seasonChips .chip,#otherTagChips .chip').forEach(c=>c.classList.remove('active'));
   applyFilters();
 }
 
