@@ -1,0 +1,32 @@
+Oven,Name,Cost,Revenue,Quantity,Hours to Cook,Unlocked?,Completed?,Primary Color,Holiday,Season,Type,Other Tags
+3 Bears Oven,Mini Chocolate Cake,940,1400,350,1,TRUE,TRUE,Brown,,,Puddings/Parfaits,Animal|Space|Plant
+3 Bears Oven,Dyed Egg Macarons,940,1400,350,1,TRUE,TRUE,Rainbow,Easter,,Cookies,
+3 Bears Oven,Bear Buns,940,1400,350,1,TRUE,TRUE,Brown,,,Breads,Aniaml|<3
+3 Bears Oven,Saffron Buns,940,1400,350,1,TRUE,TRUE,Green,,,Breads,
+3 Bears Oven,Biscuits and Jam,940,1400,350,1,TRUE,TRUE,Tan,,,Breads,ooglay
+3 Bears Oven,Wojapi and Fry Bread,940,1400,350,1,TRUE,TRUE,Tan,,,Breads,
+3 Bears Oven,Wolf Bun,940,1400,350,1,TRUE,TRUE,Tan,,Winter,Cookies,
+3 Bears Oven,Monkey Bread,940,1400,350,1,TRUE,TRUE,Tan,,,Breads,
+3 Bears Oven,Matcha Crinkle Cookie,940,1400,350,1,TRUE,TRUE,Green,,,Cookies,
+3 Bears Oven,Too Hot,3540,8600,2150,24,TRUE,TRUE,Red,Valentine's Day,,Cookies,FairyTale
+3 Bears Oven,Too Cold,2840,5000,1250,6,TRUE,FALSE,Blue,,Winter,Cookies,Fairytale
+3 Bears Oven,Just Right,5380,10800,2700,12,TRUE,FALSE,Yellow,,,Cookies,Fairytale
+3 Bears Oven,Matcha Strawberries,1380,2200,550,3,FALSE,FALSE,,,,,
+3 Bears Oven,Matcha Roll Cake,1620,3000,750,8,FALSE,FALSE,,,,,
+3 Bears Oven,Saffron Milk Cakes,1380,2200,550,3,FALSE,FALSE,,,,,
+3 Bears Oven,Saffron Crab Tarts,1620,3000,750,8,FALSE,FALSE,,,,,Animal
+3 Bears Oven,Grape Dumplings,1380,2200,550,3,FALSE,FALSE,,,,,
+3 Bears Oven,Lakota Plum Cake,1620,3000,750,8,FALSE,FALSE,,,,,
+3 Bears Oven,Tiger Cake,1620,3000,750,8,FALSE,FALSE,,,,,Animal
+3 Bears Oven,Bear Claw,1380,2200,550,3,FALSE,FALSE,,,,,Animal
+3 Bears Oven,Macaron Tray,1620,3000,750,8,FALSE,FALSE,,,,,
+3 Bears Oven,Bear Shaped Macarons,1380,2200,550,3,FALSE,FALSE,,,,,Animal
+After Xmas Sale Oven,Leftover Cran-sauce Muffin,1220,1900,475,2,TRUE,TRUE,,,,,
+After Xmas Sale Oven,Leftover Gingerbread Cinnamon Roll,1380,2200,550,3,FALSE,FALSE,,,,,
+After Xmas Sale Oven,Leftover Turkey Crescent Ring,1540,2600,650,5,FALSE,FALSE,,,,,
+After Xmas Sale Stove,Leftover Candy Cane Coffee,1220,1900,475,2,FALSE,FALSE,,,,,
+After Xmas Sale Stove,Leftover Eggnog Pancakes,1600,2900,725,7,FALSE,FALSE,,,,,
+After Xmas Sale Stove,Leftover Stuffing Waffles,1640,3100,775,10,FALSE,FALSE,,,,,
+Alice Oven,Cheshire Cookie,760,1200,300,1,FALSE,FALSE,,,,,
+Alice Oven,Cup Of Tea Cakes,860,1400,350,2,FALSE,FALSE,,,,,
+Alice Oven,Unbirthday Cake,1020,1600,400,4,FALSE,FALSE,,,,,
