@@ -603,7 +603,7 @@
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('recipes')">🍰 Recipes</button>
   <button class="tab-btn" onclick="switchTab('ovens')">🔥 Ovens</button>
-  <button class="tab-btn" onclick="switchTab('finder')">🔍 Recipe Finder</button>
+
 </div>
 
 <div class="main" id="mainContainer">
@@ -618,10 +618,9 @@
     <div class="sidebar-section">
       <h3>Status</h3>
       <div class="filter-chips" id="statusChips">
-        <span class="chip active" data-status="all"       onclick="toggleStatus(this)">All</span>
-        <span class="chip"        data-status="completed" onclick="toggleStatus(this)">⭐ Completed</span>
-        <span class="chip"        data-status="unlocked"  onclick="toggleStatus(this)">🔓 Unlocked</span>
-        <span class="chip"        data-status="locked"    onclick="toggleStatus(this)">🔒 Locked</span>
+        <span class="chip" data-status="completed" onclick="toggleStatus(this)">⭐ Completed</span>
+        <span class="chip" data-status="unlocked"  onclick="toggleStatus(this)">🔓 Unlocked</span>
+        <span class="chip" data-status="locked"    onclick="toggleStatus(this)">🔒 Locked</span>
       </div>
     </div>
     <div class="sidebar-section">
@@ -701,8 +700,8 @@
 
 <script src="data.js"></script>
 <script>
-let activeTab='recipes',activeStatus='all';
-let activeColors=new Set(),activeHolidays=new Set(),activeSeasons=new Set(),activeOtherTags=new Set();
+let activeTab='recipes';
+let activeStatuses=new Set(),activeColors=new Set(),activeHolidays=new Set(),activeSeasons=new Set(),activeOtherTags=new Set();
 let modalIndex=null,modalPending={};
 let overrides={};
 try{overrides=JSON.parse(localStorage.getItem('bs_overrides')||'{}');}catch(e){}
@@ -743,8 +742,10 @@ function toggleSet(el,val,set){
   else{set.add(val);el.classList.add('active');}
 }
 function toggleStatus(el){
-  document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');activeStatus=el.dataset.status;applyFilters();
+  const val=el.dataset.status;
+  if(activeStatuses.has(val)){activeStatuses.delete(val);el.classList.remove('active');}
+  else{activeStatuses.add(val);el.classList.add('active');}
+  applyFilters();
 }
 
 function applyFilters(){
@@ -760,9 +761,13 @@ function applyFilters(){
   results=results.filter(r=>{
     if(!r.name)return false;
     if(search&&!r.name.toLowerCase().includes(search)&&!r.oven.toLowerCase().includes(search))return false;
-    if(activeStatus==='completed'&&!r.completed)return false;
-    if(activeStatus==='unlocked'&&!(r.unlocked&&!r.completed))return false;
-    if(activeStatus==='locked'&&r.unlocked)return false;
+    if(activeStatuses.size>0){
+      const isCompleted=r.completed;
+      const isUnlocked=r.unlocked&&!r.completed;
+      const isLocked=!r.unlocked;
+      const matches=(activeStatuses.has('completed')&&isCompleted)||(activeStatuses.has('unlocked')&&isUnlocked)||(activeStatuses.has('locked')&&isLocked);
+      if(!matches)return false;
+    }
     if(ownedOnly&&(ovenCountMap[r.oven]||0)===0)return false;
     if(minH!==null&&(r.hoursNum==null||r.hoursNum<minH))return false;
     if(maxH!==null&&(r.hoursNum==null||r.hoursNum>maxH))return false;
@@ -915,7 +920,7 @@ function updateStats(){
 function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active',['recipes','ovens','finder'][i]===tab);
+    b.classList.toggle('active',['recipes','ovens'][i]===tab);
   });
   const sidebar=document.getElementById('sidebar');
   const recipeGrid=document.getElementById('recipeGrid');
@@ -936,8 +941,8 @@ function clearFilters(){
   document.getElementById('minHours').value='';
   document.getElementById('maxHours').value='';
   document.getElementById('typeSelect').value='';
-  activeStatus='all';activeColors.clear();activeHolidays.clear();activeSeasons.clear();activeOtherTags.clear();
-  document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.status==='all'));
+  activeStatuses.clear();activeColors.clear();activeHolidays.clear();activeSeasons.clear();activeOtherTags.clear();
+  document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
   document.querySelectorAll('#colorChips .chip,#holidayChips .chip,#seasonChips .chip,#otherTagChips .chip').forEach(c=>c.classList.remove('active'));
   applyFilters();
 }
