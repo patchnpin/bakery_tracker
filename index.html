@@ -795,12 +795,12 @@
 const IMG_SET = (typeof IMAGE_SET !== 'undefined') ? new Set(IMAGE_SET) : new Set();
 
 function hasImg(r) {
-  const sanitize = s => s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const sanitize = s => s.toLowerCase().replace(/[''']/g,'').replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
   const base = `${sanitize(r.oven)}_${sanitize(r.name)}`;
   return IMG_SET.has(base+'.png');
 }
 function imgKey(r, ext) {
-  const sanitize = s => s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const sanitize = s => s.toLowerCase().replace(/[''']/g,'').replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
   return `images/recipes/${sanitize(r.oven)}_${sanitize(r.name)}.${ext}`;
 }
 
@@ -989,12 +989,12 @@ function renderPhotoQueue(){
   });
   const ovenNames=Object.keys(byOven).sort((a,b)=>a.localeCompare(b));
 
-  const sanitize=s=>s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const sanitizeDisplay=s=>s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
 
   const groupsHTML=ovenNames.map(oven=>{
     const items=byOven[oven].sort((a,b)=>a.name.localeCompare(b.name));
     const itemsHTML=items.map(r=>{
-      const fname=`${sanitize(r.oven)}_${sanitize(r.name)}`;
+      const fname=`${sanitizeDisplay(r.oven)}_${sanitizeDisplay(r.name)}`;
       const badge=r.completed
         ?`<span class="status-badge status-completed" style="position:static;font-size:0.6rem;padding:1px 6px">⭐ Done</span>`
         :`<span class="status-badge status-unlocked"  style="position:static;font-size:0.6rem;padding:1px 6px">🔓 Unlocked</span>`;

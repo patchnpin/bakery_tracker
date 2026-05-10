@@ -9,7 +9,7 @@
  *   recipes.csv       — columns: Oven, Name, Cost, Revenue, Quantity, Hours to Cook,
  *                                Unlocked?, Completed?, Primary Color, Holiday,
  *                                Season, Type, Other Tags
- *   images/recipes/   — scanned for existing photo files (png)
+ *   images/recipes/   — scanned for existing photo files (webp/png/jpg)
  *
  * Writes:
  *   data.js           — OVENS, RECIPES, and IMAGE_SET arrays ready for index.html
@@ -19,7 +19,7 @@
  *   profit        — revenue - cost
  *   profitPerHour — profit / Hours to Cook (rounded to nearest integer)
  *
- * IMAGE_SET is a flat array of filenames (e.g. "3_Bears_Oven_Bear_Buns.png").
+ * IMAGE_SET is a flat array of filenames (e.g. "3_Bears_Oven_Bear_Buns.webp").
  * index.html uses it to instantly know which recipes have photos — no failed
  * network requests, no slow image probing.
  */
@@ -167,7 +167,8 @@ const imgDir = path.join(__dirname, 'images', 'recipes');
 let imageFiles = [];
 try {
   imageFiles = fs.readdirSync(imgDir)
-    .filter(f => /\.png$/i.test(f));
+    .filter(f => /\.png$/i.test(f))
+    .map(f => f.toLowerCase());
   console.log(`📷 Found ${imageFiles.length} images in images/recipes/`);
 } catch(e) {
   console.warn(`⚠️  Could not read ${imgDir} — IMAGE_SET will be empty. Make sure the folder exists.`);
