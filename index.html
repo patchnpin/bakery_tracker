@@ -581,6 +581,95 @@
   .dot-Teal   { background: #30b8c0; }
   .dot-White  { background: #eee; border: 1px solid #ccc; }
   .dot-Yellow { background: #e8c830; }
+  /* ── Photo queue tab ── */
+  .photo-queue-wrap { padding-bottom: 12px; }
+  .photo-queue-intro {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.83rem;
+    color: var(--text-mid);
+    font-weight: 600;
+  }
+  .photo-queue-intro .pq-count {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    color: var(--pink-dark);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .photo-queue-group { margin-bottom: 28px; }
+  .photo-queue-group h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .photo-queue-group h2 .pq-group-count {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--border);
+    color: var(--text-mid);
+    padding: 2px 9px;
+    border-radius: 10px;
+  }
+  .photo-queue-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .pq-item {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .pq-item:hover { border-color: var(--pink-deep); box-shadow: 0 2px 12px var(--shadow-soft); }
+  .pq-item-name {
+    font-family: 'Fraunces', serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .pq-item-oven {
+    font-size: 0.67rem;
+    color: var(--text-light);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .pq-item-filename {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    font-family: monospace;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 6px;
+    margin-top: 4px;
+    word-break: break-all;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    user-select: none;
+    title: "Click to copy";
+  }
+  .pq-item-filename:hover { background: var(--yellow); color: #7a5010; border-color: var(--yellow-deep); }
+  .pq-item-filename.copied { background: var(--mint); color: #1a6040; border-color: var(--mint-deep); }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 6px; }
@@ -603,7 +692,7 @@
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('recipes')">🍰 Recipes</button>
   <button class="tab-btn" onclick="switchTab('ovens')">🔥 Ovens</button>
-
+  <button class="tab-btn" onclick="switchTab('photos')">📷 Needs Photo</button>
 </div>
 
 <div class="main" id="mainContainer">
@@ -677,6 +766,7 @@
     </div>
     <div id="recipeGrid" class="recipe-grid"></div>
     <div id="ovenGrid"   class="ovens-grid" style="display:none"></div>
+    <div id="photoGrid"  class="photo-queue-wrap" style="display:none"></div>
   </div>
 </div>
 
@@ -700,6 +790,20 @@
 
 <script src="data.js"></script>
 <script>
+// IMAGE_SET is written by build.js — a Set of filenames that actually exist.
+// Falls back to empty set if not present (graceful degradation).
+const IMG_SET = (typeof IMAGE_SET !== 'undefined') ? new Set(IMAGE_SET) : new Set();
+
+function hasImg(r) {
+  const sanitize = s => s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const base = `${sanitize(r.oven)}_${sanitize(r.name)}`;
+  return IMG_SET.has(base+'.png');
+}
+function imgKey(r, ext) {
+  const sanitize = s => s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  return `images/recipes/${sanitize(r.oven)}_${sanitize(r.name)}.${ext}`;
+}
+
 let activeTab='recipes';
 let activeStatuses=new Set(),activeColors=new Set(),activeHolidays=new Set(),activeSeasons=new Set(),activeOtherTags=new Set();
 let modalIndex=null,modalPending={};
@@ -716,7 +820,6 @@ function init(){
   ['Breads','Brownies','Cake Pops','Candies/Sweets','Coffees','Cold Drinks','Cookies','Cupcakes','Donuts','Hot Chocolates','Hot Teas','Ice Creams','Muffins','Multi Layer Cakes','Pancakes','Pastries','Pies','Puddings/Parfaits','Savory','Single Layer Cakes','Smoothies & Milkshakes','Tarts','Waffles'].forEach(t=>{
     const o=document.createElement('option');o.value=t;o.textContent=t;ts.appendChild(o);
   });
-  // Build Other Tags chips from actual data
   const allTags=new Set();
   RECIPES.forEach(r=>{if(r.otherTags)r.otherTags.split('|').filter(Boolean).forEach(t=>allTags.add(t.trim()));});
   const sortedTags=[...allTags].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
@@ -756,7 +859,7 @@ function applyFilters(){
   const typeVal=document.getElementById('typeSelect').value;
   const sort=document.getElementById('sortSelect').value;
   const ovenCountMap={};
-  OVENS.forEach(o=>{ovenCountMap[o.name]=parseInt(o.total)||0;});
+  OVENS.forEach(o=>{ovenCountMap[o.name]=parseInt(o.totalOvens)||0;});
   let results=RECIPES.map((r,i)=>({...r,...(overrides[i]||{}),_i:i}));
   results=results.filter(r=>{
     if(!r.name)return false;
@@ -800,11 +903,6 @@ function renderRecipes(list){
   grid.innerHTML=list.map(r=>recipeCardHTML(r,r._i)).join('');
 }
 
-function imgKey(r, ext) {
-  const sanitize = s => s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-  return `images/recipes/${sanitize(r.oven)}_${sanitize(r.name)}.${ext}`;
-}
-
 function recipeCardHTML(r,i){
   const completed=r.completed,unlocked=r.unlocked;
   const cardClass=completed?'completed':unlocked?'unlocked-not-done':'locked';
@@ -814,19 +912,21 @@ function recipeCardHTML(r,i){
       ?`<span class="status-badge status-unlocked">🔓 Unlocked</span>`
       :`<span class="status-badge status-locked">🔒 Locked</span>`;
 
-  // All cards: try webp → png → fallback placeholder
-  // Locked fallback = 🔒, unlocked/completed fallback = 🍰
-  const lockedFallback = (!unlocked && !completed)
-    ? `<div class=\\'card-img-placeholder is-locked\\'><span style=\\'font-size:2.4rem\\'>🔒</span><span>Locked</span></div>`
-    : `<div class=\\'card-img-placeholder no-image\\'><span style=\\'font-size:2.4rem\\'>🍰</span><span>No photo yet</span></div>`;
-  const imgHTML=`<div class="card-img-wrap">
-    <img src="${imgKey(r,'webp')}" alt="${r.name}"
-      onerror="if(this.src.endsWith('.webp')){this.src='${imgKey(r,'png')}';}else{this.parentElement.innerHTML='${lockedFallback}';}">
-  </div>`;
+  // Use IMAGE_SET to decide instantly — no failed network requests
+  const imgExists=hasImg(r);
+  let imgHTML;
+  if(imgExists){
+    // Load png directly — no webp fallback needed
+    imgHTML=`<div class="card-img-wrap">
+      <img src="${imgKey(r,'png')}" alt="${r.name}">
+    </div>`;
+  } else {
+    const placeholder=(!unlocked&&!completed)
+      ?`<div class="card-img-placeholder is-locked"><span style="font-size:2.4rem">🔒</span><span>Locked</span></div>`
+      :`<div class="card-img-placeholder no-image"><span style="font-size:2.4rem">🍰</span><span>No photo yet</span></div>`;
+    imgHTML=`<div class="card-img-wrap">${placeholder}</div>`;
+  }
 
-  const hasImg = true; // always has an img-wrap now
-  const noImgClass = ''; // stripe only on no-img cards — we keep stripe for locked fallback
-  
   let tags='';
   if(r.hoursLabel)tags+=`<span class="meta-tag tag-time">⏱ ${r.hoursLabel}</span>`;
   if(r.type)tags+=`<span class="meta-tag tag-type">${r.type}</span>`;
@@ -854,17 +954,70 @@ function renderOvens(){
   validOvens.sort((a,b)=>a.name.localeCompare(b.name));
   grid.innerHTML=validOvens.map(o=>{
     const total=parseInt(o.recipesTotal)||0,done=parseInt(o.recipesCompleted)||0,left=total-done;
-    const pct=total>0?Math.round(done/total*100):0,owned=parseInt(o.total)||0;
+    const pct=total>0?Math.round(done/total*100):0,owned=parseInt(o.totalOvens)||0;
     return`<div class="oven-card">
       <div class="oven-name">${o.name}</div>
       <div class="oven-count-row">
-        <span>Owned: <strong>${owned}</strong>${o.echo>0?` (+${o.echo} echo)`:''}</span>
+        <span>Owned: <strong>${owned}</strong></span>
         <span><strong>${done}/${total}</strong> mastered</span>
       </div>
       <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
       <div class="progress-label"><span>${pct}% complete</span><span>${left} left</span></div>
     </div>`;
   }).join('');
+}
+
+function renderPhotoQueue(){
+  const wrap=document.getElementById('photoGrid');
+  const ovenCountMap={};
+  OVENS.forEach(o=>{ovenCountMap[o.name]=parseInt(o.totalOvens)||0;});
+
+  // Unlocked (including completed) recipes, oven owned, no photo
+  const needsPhoto=RECIPES.map((r,i)=>({...r,...(overrides[i]||{}),_i:i}))
+    .filter(r=>r.name && r.unlocked && !hasImg(r) && (ovenCountMap[r.oven]||0)>0);
+
+  if(needsPhoto.length===0){
+    wrap.innerHTML='<div class="empty-state"><div class="emoji">🎉</div><p>Every unlocked recipe you own has a photo!</p></div>';
+    return;
+  }
+
+  // Group by oven, sorted alphabetically
+  const byOven={};
+  needsPhoto.forEach(r=>{
+    if(!byOven[r.oven])byOven[r.oven]=[];
+    byOven[r.oven].push(r);
+  });
+  const ovenNames=Object.keys(byOven).sort((a,b)=>a.localeCompare(b));
+
+  const sanitize=s=>s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+
+  const groupsHTML=ovenNames.map(oven=>{
+    const items=byOven[oven].sort((a,b)=>a.name.localeCompare(b.name));
+    const itemsHTML=items.map(r=>{
+      const fname=`${sanitize(r.oven)}_${sanitize(r.name)}`;
+      const badge=r.completed
+        ?`<span class="status-badge status-completed" style="position:static;font-size:0.6rem;padding:1px 6px">⭐ Done</span>`
+        :`<span class="status-badge status-unlocked"  style="position:static;font-size:0.6rem;padding:1px 6px">🔓 Unlocked</span>`;
+      return`<div class="pq-item">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+          <div class="pq-item-name">${r.name}</div>${badge}
+        </div>
+        <div class="pq-item-oven">${r.oven}</div>
+        <div class="pq-item-filename" title="Click to copy filename" onclick="copyFilename(this,'${fname}.png')">${fname}.png</div>
+      </div>`;
+    }).join('');
+    return`<div class="photo-queue-group">
+      <h2>🔥 ${oven} <span class="pq-group-count">${items.length}</span></h2>
+      <div class="photo-queue-list">${itemsHTML}</div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML=`
+    <div class="photo-queue-intro">
+      <div class="pq-count">${needsPhoto.length}</div>
+      <div>unlocked recipes you own the oven for are still missing a photo. Each card shows the filename to use when saving the image.</div>
+    </div>
+    ${groupsHTML}`;
 }
 
 function openModal(i){
@@ -910,9 +1063,12 @@ function updateStats(){
   const all=RECIPES.map((r,i)=>getRecipe(i)).filter(r=>r.name);
   const completed=all.filter(r=>r.completed).length;
   const unlocked=all.filter(r=>r.unlocked&&!r.completed).length;
+  const withPhoto=all.filter(r=>r.unlocked&&hasImg(r)).length;
+  const unlockedTotal=all.filter(r=>r.unlocked).length;
   document.getElementById('headerStats').innerHTML=`
     <div class="stat-pill"><div class="num">${completed.toLocaleString()}</div><div class="lbl">Completed</div></div>
     <div class="stat-pill"><div class="num">${unlocked.toLocaleString()}</div><div class="lbl">In Progress</div></div>
+    <div class="stat-pill"><div class="num">${withPhoto.toLocaleString()} <span style="font-size:0.75rem;color:var(--text-light)">/ ${unlockedTotal.toLocaleString()}</span></div><div class="lbl">Have Photos</div></div>
     <div class="stat-pill"><div class="num">${all.length.toLocaleString()}</div><div class="lbl">Total Recipes</div></div>
   `;
 }
@@ -920,18 +1076,25 @@ function updateStats(){
 function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active',['recipes','ovens'][i]===tab);
+    b.classList.toggle('active',['recipes','ovens','photos'][i]===tab);
   });
   const sidebar=document.getElementById('sidebar');
   const recipeGrid=document.getElementById('recipeGrid');
   const ovenGrid=document.getElementById('ovenGrid');
+  const photoGrid=document.getElementById('photoGrid');
   const resultsBar=document.querySelector('.results-bar');
   if(tab==='ovens'){
     sidebar.style.display='none';recipeGrid.style.display='none';
-    ovenGrid.style.display='';resultsBar.style.display='none';renderOvens();
+    ovenGrid.style.display='';photoGrid.style.display='none';
+    resultsBar.style.display='none';renderOvens();
+  } else if(tab==='photos'){
+    sidebar.style.display='none';recipeGrid.style.display='none';
+    ovenGrid.style.display='none';photoGrid.style.display='';
+    resultsBar.style.display='none';renderPhotoQueue();
   } else {
     sidebar.style.display='';recipeGrid.style.display='';
-    ovenGrid.style.display='none';resultsBar.style.display='';applyFilters();
+    ovenGrid.style.display='none';photoGrid.style.display='none';
+    resultsBar.style.display='';applyFilters();
   }
 }
 
@@ -945,6 +1108,25 @@ function clearFilters(){
   document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
   document.querySelectorAll('#colorChips .chip,#holidayChips .chip,#seasonChips .chip,#otherTagChips .chip').forEach(c=>c.classList.remove('active'));
   applyFilters();
+}
+
+function copyFilename(el, fname){
+  navigator.clipboard.writeText(fname).then(()=>{
+    el.textContent='✓ Copied!';
+    el.classList.add('copied');
+    setTimeout(()=>{
+      el.textContent=fname;
+      el.classList.remove('copied');
+    }, 1500);
+  }).catch(()=>{
+    // Fallback for browsers without clipboard API
+    const ta=document.createElement('textarea');
+    ta.value=fname;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
+    el.textContent='✓ Copied!';el.classList.add('copied');
+    setTimeout(()=>{el.textContent=fname;el.classList.remove('copied');},1500);
+  });
 }
 
 init();
