@@ -9,7 +9,7 @@
  *   recipes.csv       — columns: Oven, Name, Cost, Revenue, Quantity, Hours to Cook,
  *                                Unlocked?, Completed?, Primary Color, Holiday,
  *                                Season, Type, Other Tags
- *   images/recipes/   — scanned for existing photo files (webp/png/jpg)
+ *   images/recipes/   — scanned for existing photo files (png)
  *
  * Writes:
  *   data.js           — OVENS, RECIPES, and IMAGE_SET arrays ready for index.html
@@ -19,7 +19,7 @@
  *   profit        — revenue - cost
  *   profitPerHour — profit / Hours to Cook (rounded to nearest integer)
  *
- * IMAGE_SET is a flat array of filenames (e.g. "3_Bears_Oven_Bear_Buns.webp").
+ * IMAGE_SET is a flat array of filenames (e.g. "3_bears_oven_bear_buns.png").
  * index.html uses it to instantly know which recipes have photos — no failed
  * network requests, no slow image probing.
  */
@@ -99,25 +99,38 @@ ovensCSV.forEach(row => {
   if (name) ovenCountMap[name] = qty;
 });
 
-// ── Build OVENS array ─────────────────────────────────────────────────────────
+// ── Build recipe stats per oven ───────────────────────────────────────────────
+// Keyed by trimmed oven name so whitespace differences don't cause mismatches
 
 const recipesByOven = {};
 recipesCSV.forEach(row => {
-  const oven = row['Oven'];
+  const oven = (row['Oven'] || '').trim();
   if (!oven) return;
   if (!recipesByOven[oven]) recipesByOven[oven] = { total: 0, completed: 0 };
   recipesByOven[oven].total++;
   if (bool(row['Completed?'])) recipesByOven[oven].completed++;
 });
 
+// ── Build OVENS array ─────────────────────────────────────────────────────────
+
 const ovens = Object.keys(ovenCountMap).map(name => {
-  const stats = recipesByOven[name] || { total: 0, completed: 0 };
+  const stats = recipesByOven[name];
+  if (!stats) {
+    console.warn(`⚠️  Oven name mismatch — "${name}" is in ovens.csv but no recipes found with that oven name in recipes.csv`);
+  }
   return {
     name,
     totalOvens:       ovenCountMap[name],
-    recipesCompleted: stats.completed,
-    recipesTotal:     stats.total,
+    recipesCompleted: stats ? stats.completed : 0,
+    recipesTotal:     stats ? stats.total     : 0,
   };
+});
+
+// Also warn about any ovens in recipes.csv that aren't in ovens.csv
+Object.keys(recipesByOven).forEach(name => {
+  if (!(name in ovenCountMap)) {
+    console.warn(`⚠️  Oven name mismatch — "${name}" is used in recipes.csv but not found in ovens.csv`);
+  }
 });
 
 // ── Build RECIPES array ───────────────────────────────────────────────────────
@@ -176,8 +189,8 @@ try {
 
 // ── Write data.js ─────────────────────────────────────────────────────────────
 
-const ovensJS   = ovens.map(o => '    ' + serializeObject(o)).join(',\n');
-const recipesJS = recipes.map(r => '   ' + serializeObject(r)).join(',\n');
+const ovensJS    = ovens.map(o => '    ' + serializeObject(o)).join(',\n');
+const recipesJS  = recipes.map(r => '   ' + serializeObject(r)).join(',\n');
 const imageSetJS = JSON.stringify(imageFiles);
 
 const output = [
