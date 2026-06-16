@@ -718,6 +718,12 @@
         <input type="checkbox" id="ownedOnly" onchange="applyFilters()">
         Only show ovens I have
       </label>
+      <div style="margin-top:8px;font-size:0.75rem;color:var(--text-light);font-weight:700;margin-bottom:4px;">Number of ovens</div>
+      <div class="range-inputs">
+        <input type="number" id="minOvens" placeholder="Min" min="0" oninput="applyFilters()">
+        <span>–</span>
+        <input type="number" id="maxOvens" placeholder="Max" min="0" oninput="applyFilters()">
+      </div>
     </div>
     <div class="sidebar-section">
       <h3>Cook Time (hours)</h3>
@@ -856,6 +862,8 @@ function applyFilters(){
   const ownedOnly=document.getElementById('ownedOnly').checked;
   const minH=parseFloat(document.getElementById('minHours').value)||null;
   const maxH=parseFloat(document.getElementById('maxHours').value)||null;
+  const minOvens=document.getElementById('minOvens').value!==''?parseInt(document.getElementById('minOvens').value):null;
+  const maxOvens=document.getElementById('maxOvens').value!==''?parseInt(document.getElementById('maxOvens').value):null;
   const typeVal=document.getElementById('typeSelect').value;
   const sort=document.getElementById('sortSelect').value;
   const ovenCountMap={};
@@ -872,6 +880,8 @@ function applyFilters(){
       if(!matches)return false;
     }
     if(ownedOnly&&(ovenCountMap[r.oven]||0)===0)return false;
+    if(minOvens!==null&&(ovenCountMap[r.oven]||0)<minOvens)return false;
+    if(maxOvens!==null&&(ovenCountMap[r.oven]||0)>maxOvens)return false;
     if(minH!==null&&(r.hoursNum==null||r.hoursNum<minH))return false;
     if(maxH!==null&&(r.hoursNum==null||r.hoursNum>maxH))return false;
     if(activeColors.size>0&&!activeColors.has(r.color))return false;
@@ -1103,6 +1113,8 @@ function clearFilters(){
   document.getElementById('ownedOnly').checked=false;
   document.getElementById('minHours').value='';
   document.getElementById('maxHours').value='';
+  document.getElementById('minOvens').value='';
+  document.getElementById('maxOvens').value='';
   document.getElementById('typeSelect').value='';
   activeStatuses.clear();activeColors.clear();activeHolidays.clear();activeSeasons.clear();activeOtherTags.clear();
   document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
