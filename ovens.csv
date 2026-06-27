@@ -23,9 +23,9 @@ Autumn Turquoise Oven,6
 Autumn Turquoise Stove,6
 Bakesgiving Oven,6
 Baking Oven,0
-Ballpark Fountain,0
+Ballpark Fountain,1
 Banana Stand,0
-Banner Oven,0
+Banner Oven,1
 Barbecue Oven,0
 Barnyard Oven B,0
 Barnyard Oven B2021,0
@@ -68,7 +68,7 @@ Caliente Oven,0
 Camping Cute Stove,0
 Camping Drink Mixer,1
 Canape Oven,0
-Candy Cane Maker,2
+Candy Cane Maker,12
 Candy Cauldron,2
 Candy Cooker,0
 Candy Corn Oven,0
@@ -133,7 +133,7 @@ Crystal Oven,3
 Cursed Oven,0
 Cursed Stove,0
 Cute Camp Oven,0
-Dad's Dessert Workbench,1
+Dad's Dessert Workbench,2
 Deadly Drink Machine,0
 Deep Fryer,12
 Deep Sea Oven,1
@@ -170,6 +170,7 @@ Fall Fountain,0
 Fall Oven,0
 Fancy Drink Machine,0
 Fantasy Stove,0
+Father's Grill Master Oven,1
 Fire Pit,0
 Firework Oven,0
 Flag Stove,0
@@ -357,7 +358,7 @@ Pastel Oven,5
 Pastry Cart,0
 Pasture Oven,5
 Patisserie Oven,0
-Patriotic Oven,0
+Patriotic Oven,1
 Patriotic Stove,0
 Peachy Mixer,0
 Peachy Oven,0
@@ -423,7 +424,7 @@ Romantic Stove,0
 Rose Gold Oven,1
 Rose Gold Stove,1
 Rose Heart Oven,0
-Rose Oven,1
+Rose Oven,4
 Rosey Resevoir,6
 Royal Oven,0
 Ruby Oven,1
@@ -473,7 +474,7 @@ Spooky Stove,5
 Spring Kettle,10
 Spring Tea Kettle,5
 Staggered Stove,0
-Stainless Steel Oven,12
+Stainless Steel Oven,14
 Starry Stove,1
 Starship Stove,1
 Steam Oven,0
@@ -507,6 +508,7 @@ Tavern Drink Machine,0
 Tavern Oven,0
 Tea Cup Stove,5
 Tea Infuser,0
+Tea Party Prepper,0
 Tea Party Prepper,0
 Tea Shop Brewer,0
 Tea Shop Oven,0
@@ -582,7 +584,5 @@ Yoga Stove,1
 Yogurt Chiller,3
 Yuletide Candy Maker,0
 Yultide Oven,0
-,0
-,0
-,0
-,0
+American Dessert Station,2
+Star Spangled Sweets Maker,0
