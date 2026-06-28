@@ -666,7 +666,6 @@
     cursor: pointer;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
     user-select: none;
-    title: "Click to copy";
   }
   .pq-item-filename:hover { background: var(--yellow); color: #7a5010; border-color: var(--yellow-deep); }
   .pq-item-filename.copied { background: var(--mint); color: #1a6040; border-color: var(--mint-deep); }
@@ -1003,16 +1002,18 @@ function renderPhotoQueue(){
 
   const groupsHTML=ovenNames.map(oven=>{
     const items=byOven[oven].sort((a,b)=>a.name.localeCompare(b.name));
-    const itemsHTML=items.map(r=>{
-      const fname=`${sanitizeDisplay(r.oven)}_${sanitizeDisplay(r.name)}`;
-      const badge=r.completed
-        ?`<span class="status-badge status-completed" style="position:static;font-size:0.6rem;padding:1px 6px">⭐ Done</span>`
-        :`<span class="status-badge status-unlocked"  style="position:static;font-size:0.6rem;padding:1px 6px">🔓 Unlocked</span>`;
-      return`<div class="pq-item">
+const itemsHTML=items.map(r=>{
+const fname=`${sanitizeDisplay(r.oven)}_${sanitizeDisplay(r.name)}`;
+const badge=r.completed
+?`<span class="status-badge status-completed" style="position:static;font-size:0.6rem;padding:1px 6px">⭐ Done</span>`
+:`<span class="status-badge status-unlocked"  style="position:static;font-size:0.6rem;padding:1px 6px">🔓 Unlocked</span>`;
+const hoursLabel=r.hours===1?'1 hr':`${r.hours} hrs`;
+return`<div class="pq-item">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
           <div class="pq-item-name">${r.name}</div>${badge}
         </div>
         <div class="pq-item-oven">${r.oven}</div>
+        <div class="pq-item-time">⏱ ${hoursLabel}</div>
         <div class="pq-item-filename" title="Click to copy filename" onclick="copyFilename(this,'${fname}.png')">${fname}.png</div>
       </div>`;
     }).join('');
