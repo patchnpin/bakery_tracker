@@ -1,970 +1,1427 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🧁 Bakery Story — Recipe Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --pink-main:   #F8CED0;
-    --peach:       #FEDACA;
-    --yellow:      #FEF0C2;
-    --mint:        #C2F3D3;
-    --aqua:        #C2F3F1;
-    --pink-deep:   #f0a0aa;
-    --pink-dark:   #d4697a;
-    --peach-deep:  #f7b89a;
-    --yellow-deep: #f5d06a;
-    --mint-deep:   #7dd4a0;
-    --aqua-deep:   #7dd4d0;
-    --white:       #ffffff;
-    --off-white:   #fffcfa;
-    --surface:     #fff8f9;
-    --text:        #3a2030;
-    --text-mid:    #7a5060;
-    --text-light:  #b899a8;
-    --border:      #fce0e6;
-    --border-mid:  #f8c8d4;
-    --shadow-pink: rgba(248,206,208,0.6);
-    --shadow-soft: rgba(180,100,120,0.08);
-    --completed-bg:   #FEF0C2;
-    --completed-text: #8a6010;
-    --unlocked-bg:    #C2F3D3;
-    --unlocked-text:  #2a7a50;
-    --locked-bg:      #fce8ec;
-    --locked-text:    #c0607a;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--off-white);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image:
-      radial-gradient(circle at 8% 12%,  #F8CED044 0%, transparent 28%),
-      radial-gradient(circle at 92% 8%,  #FEF0C255 0%, transparent 24%),
-      radial-gradient(circle at 50% 95%, #C2F3D333 0%, transparent 30%),
-      radial-gradient(circle at 85% 60%, #FEDACA33 0%, transparent 22%),
-      radial-gradient(circle at 15% 75%, #C2F3F122 0%, transparent 20%);
-  }
-  header {
-    position: relative;
-    z-index: 10;
-    background: linear-gradient(135deg, #F8CED0 0%, #FEDACA 45%, #FEF0C2 100%);
-    border-bottom: 2px solid var(--border-mid);
-    padding: 22px 32px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-    box-shadow: 0 2px 20px var(--shadow-pink);
-  }
-  header::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.45) 1.5px, transparent 1.5px);
-    background-size: 22px 22px;
-    opacity: 0.5;
-  }
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    position: relative;
-  }
-  .header-icon {
-    font-size: 2.6rem;
-    line-height: 1;
-    filter: drop-shadow(0 2px 6px rgba(200,80,100,0.2));
-    animation: bob 3s ease-in-out infinite;
-  }
-  @keyframes bob {
-    0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(-5px); }
-  }
-  .header-title h1 {
-    font-family: 'Fraunces', serif;
-    font-size: 1.85rem;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.3px;
-    line-height: 1.1;
-  }
-  .header-title p {
-    font-size: 0.78rem;
-    color: var(--text-mid);
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-  .header-stats { display: flex; gap: 10px; flex-wrap: wrap; position: relative; }
-  .stat-pill {
-    background: rgba(255,255,255,0.72);
-    backdrop-filter: blur(8px);
-    border: 1.5px solid rgba(255,255,255,0.95);
-    border-radius: 16px;
-    padding: 8px 18px;
-    text-align: center;
-    box-shadow: 0 2px 10px var(--shadow-soft);
-    transition: transform 0.15s;
-  }
-  .stat-pill:hover { transform: translateY(-2px); }
-  .stat-pill .num {
-    font-family: 'Fraunces', serif;
-    font-size: 1.4rem;
-    color: var(--pink-dark);
-    line-height: 1;
-    font-weight: 600;
-  }
-  .stat-pill .lbl {
-    font-size: 0.63rem;
-    color: var(--text-mid);
-    text-transform: uppercase;
-    letter-spacing: 0.9px;
-    font-weight: 700;
-    margin-top: 1px;
-  }
-  .tabs {
-    position: relative;
-    z-index: 9;
-    background: var(--white);
-    border-bottom: 2px solid var(--border);
-    display: flex;
-    padding: 0 28px;
-    gap: 2px;
-    box-shadow: 0 1px 8px var(--shadow-soft);
-  }
-  .tab-btn {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--text-light);
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 14px 20px 11px;
-    cursor: pointer;
-    transition: all 0.18s;
-    letter-spacing: 0.3px;
-    position: relative;
-    top: 2px;
-  }
-  .tab-btn:hover { color: var(--pink-dark); }
-  .tab-btn.active { color: var(--pink-dark); border-bottom-color: var(--pink-dark); }
-  .main {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    height: calc(100vh - 138px);
-    overflow: hidden;
-  }
-  .sidebar {
-    width: 255px;
-    min-width: 220px;
-    background: var(--white);
-    border-right: 2px solid var(--border);
-    overflow-y: auto;
-    padding: 18px 14px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    flex-shrink: 0;
-  }
-  .sidebar-section h3 {
-    font-size: 0.63rem;
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: var(--text-light);
-    font-weight: 700;
-    margin-bottom: 7px;
-  }
-  .search-wrap { position: relative; }
-  .search-icon {
-    position: absolute;
-    left: 10px; top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.85rem;
-    pointer-events: none;
-  }
-  .search-box {
-    width: 100%;
-    padding: 8px 10px 8px 30px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.83rem;
-    background: var(--surface);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .search-box:focus {
-    border-color: var(--pink-deep);
-    box-shadow: 0 0 0 3px rgba(248,206,208,0.5);
-  }
-  .search-box::placeholder { color: var(--text-light); }
-  .filter-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .chip {
-    font-size: 0.73rem;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1.5px solid var(--border-mid);
-    background: var(--surface);
-    color: var(--text-mid);
-    cursor: pointer;
-    transition: all 0.13s;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .chip:hover { border-color: var(--pink-deep); color: var(--pink-dark); background: rgba(248,206,208,0.25); }
-  .chip.active { background: var(--pink-dark); border-color: var(--pink-dark); color: white; box-shadow: 0 2px 8px var(--shadow-pink); }
-  .range-inputs { display: flex; gap: 6px; align-items: center; }
-  .range-inputs input {
-    width: 68px;
-    padding: 6px 8px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-family: 'Nunito', sans-serif;
-    background: var(--surface);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .range-inputs input:focus { border-color: var(--pink-deep); }
-  .range-inputs span { color: var(--text-light); font-size: 0.85rem; }
-  .toggle-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.82rem;
-    color: var(--text-mid);
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .toggle-item input[type=checkbox] { accent-color: var(--pink-dark); width: 15px; height: 15px; }
-  select.filter-select {
-    width: 100%;
-    padding: 7px 10px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 600;
-    background: var(--surface);
-    color: var(--text);
-    outline: none;
-    cursor: pointer;
-  }
-  select.filter-select:focus { border-color: var(--pink-deep); }
-  .clear-btn {
-    width: 100%;
-    padding: 8px;
-    background: none;
-    border: 1.5px dashed var(--border-mid);
-    border-radius: 10px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-light);
-    cursor: pointer;
-    transition: all 0.13s;
-  }
-  .clear-btn:hover { border-color: var(--pink-deep); color: var(--pink-dark); background: rgba(248,206,208,0.2); }
-  .content { flex: 1; overflow-y: auto; padding: 22px 24px; background: var(--off-white); }
-  .results-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .results-count { font-size: 0.8rem; color: var(--text-light); font-weight: 600; }
-  .sort-select {
-    padding: 6px 12px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    background: var(--white);
-    color: var(--text);
-    outline: none;
-    cursor: pointer;
-  }
-  .recipe-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 14px;
-  }
-  .recipe-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    padding: 14px 15px 13px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  /* stripe only shows on cards WITHOUT an image (image cards use the image border instead) */
-  .recipe-card.no-img-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 16px 16px 0 0;
-  }
-  .recipe-card.no-img-card.completed::before        { background: linear-gradient(90deg, var(--yellow-deep), var(--peach-deep)); }
-  .recipe-card.no-img-card.unlocked-not-done::before{ background: linear-gradient(90deg, var(--mint-deep), var(--aqua-deep)); }
-  .recipe-card.no-img-card.locked::before           { background: linear-gradient(90deg, var(--border), var(--border-mid)); }
-  .recipe-card:hover {
-    box-shadow: 0 6px 24px var(--shadow-soft), 0 0 0 2px var(--pink-main);
-    transform: translateY(-2px);
-    border-color: var(--pink-deep);
-  }
-  .card-name {
-    font-family: 'Fraunces', serif;
-    font-size: 0.97rem;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.25;
-  }
-  .card-oven {
-    font-size: 0.7rem;
-    color: var(--text-light);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  .card-meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; margin-top: 2px; }
-  .meta-tag {
-    font-size: 0.67rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 700;
-  }
-  .tag-time    { background: var(--yellow); color: #7a5010; }
-  .tag-type    { background: var(--aqua);   color: #207070; }
-  .tag-color   { background: var(--white); border: 1.5px solid var(--border-mid); color: var(--text-mid); display:flex; align-items:center; gap:4px; }
-  .tag-holiday { background: var(--peach);  color: #904010; }
-  .tag-season  { background: var(--mint);   color: #206040; }
-  .tag-other   { background: #ede8f8; color: #5a3aaa; }
-  .color-dot { width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
-  .card-profit { font-size: 0.72rem; color: var(--text-light); font-weight: 600; margin-top: 1px; }
-  .status-badge {
-    position: absolute;
-    top: 10px; right: 10px;
-    font-size: 0.62rem;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    white-space: nowrap;
-  }
-  .status-completed { background: var(--completed-bg);  color: var(--completed-text); }
-  .status-unlocked  { background: var(--unlocked-bg);   color: var(--unlocked-text); }
-  .status-locked    { background: var(--locked-bg);     color: var(--locked-text); }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧁 Bakery Story — Recipe Tracker</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Nunito:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --pink-main: #F8CED0;
+      --peach: #FEDACA;
+      --yellow: #FEF0C2;
+      --mint: #C2F3D3;
+      --aqua: #C2F3F1;
+      --pink-deep: #f0a0aa;
+      --pink-dark: #d4697a;
+      --peach-deep: #f7b89a;
+      --yellow-deep: #f5d06a;
+      --mint-deep: #7dd4a0;
+      --aqua-deep: #7dd4d0;
+      --white: #ffffff;
+      --off-white: #fffcfa;
+      --surface: #fff8f9;
+      --text: #3a2030;
+      --text-mid: #7a5060;
+      --text-light: #b899a8;
+      --border: #fce0e6;
+      --border-mid: #f8c8d4;
+      --shadow-pink: rgba(248, 206, 208, 0.6);
+      --shadow-soft: rgba(180, 100, 120, 0.08);
+      --completed-bg: #FEF0C2;
+      --completed-text: #8a6010;
+      --unlocked-bg: #C2F3D3;
+      --unlocked-text: #2a7a50;
+      --locked-bg: #fce8ec;
+      --locked-text: #c0607a;
+    }
 
-  /* ── Card image area ── */
-  .card-img-wrap {
-    width: calc(100% + 30px);
-    margin: -14px -15px 0;
-    aspect-ratio: 1;
-    overflow: hidden;
-    border-radius: 14px 14px 0 0;
-    border-bottom: 1.5px solid var(--border);
-    flex-shrink: 0;
-  }
-  .card-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
-    display: block;
-    transition: transform 0.25s ease;
-  }
-  .recipe-card:hover .card-img-wrap img { transform: scale(1.04); }
-  .card-img-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 2.8rem;
-  }
-  .card-img-placeholder.no-image  { background: #fff8f9; }
-  .card-img-placeholder.is-locked { background: #fce8ec; }
-  .card-img-placeholder span {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-  }
-  .no-image  span { color: var(--text-light); }
-  .is-locked span { color: var(--locked-text); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* when image present, status badge sits over the image */
-  .card-img-wrap + .status-badge-wrap .status-badge { top: auto; right: auto; position: static; }
-  .status-badge-wrap {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 6px;
-  }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--off-white);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-  .ovens-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-    gap: 14px;
-  }
-  .oven-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    padding: 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: box-shadow 0.15s, transform 0.15s;
-  }
-  .oven-card:hover { box-shadow: 0 4px 18px var(--shadow-soft); transform: translateY(-2px); }
-  .oven-name { font-family: 'Fraunces', serif; font-size: 0.97rem; font-weight: 600; color: var(--text); }
-  .oven-count-row { display: flex; justify-content: space-between; font-size: 0.77rem; color: var(--text-mid); font-weight: 600; }
-  .oven-count-row strong { color: var(--pink-dark); }
-  .progress-bar-wrap { background: var(--border); border-radius: 6px; height: 8px; overflow: hidden; }
-  .progress-bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    background: linear-gradient(90deg, var(--pink-deep), var(--yellow-deep));
-    transition: width 0.4s ease;
-  }
-  .progress-label { font-size: 0.7rem; color: var(--text-light); font-weight: 700; display: flex; justify-content: space-between; }
-  .empty-state { text-align: center; padding: 70px 20px; color: var(--text-light); }
-  .empty-state .emoji { font-size: 3.2rem; margin-bottom: 14px; }
-  .empty-state p { font-size: 0.9rem; font-weight: 600; }
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(58,32,48,0.35);
-    backdrop-filter: blur(4px);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 28px 28px 24px;
-    max-width: 470px;
-    width: 100%;
-    box-shadow: 0 24px 64px rgba(180,80,100,0.18);
-    position: relative;
-    border: 2px solid var(--border);
-    animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes popIn {
-    from { transform: scale(0.92); opacity: 0; }
-    to   { transform: scale(1);    opacity: 1; }
-  }
-  .modal-strip {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 5px;
-    border-radius: 20px 20px 0 0;
-    background: linear-gradient(90deg, var(--pink-main), var(--peach), var(--yellow));
-  }
-  .modal h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 1.45rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 3px;
-    margin-top: 8px;
-  }
-  .modal-oven { font-size: 0.72rem; color: var(--text-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 18px; }
-  .modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 16px;
-    margin-bottom: 20px;
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 14px;
-    border: 1.5px solid var(--border);
-  }
-  .modal-field label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.9px; color: var(--text-light); display: block; margin-bottom: 2px; font-weight: 700; }
-  .modal-field span  { font-size: 0.88rem; color: var(--text); font-weight: 600; }
-  .modal-divider { border: none; border-top: 1.5px solid var(--border); margin: 0 0 16px; }
-  .modal-section-label { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
-  .modal-toggles { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-  .toggle-btn {
-    padding: 7px 15px;
-    border-radius: 20px;
-    border: 1.5px solid var(--border-mid);
-    background: var(--surface);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-mid);
-    cursor: pointer;
-    transition: all 0.13s;
-  }
-  .toggle-btn:hover { border-color: var(--pink-deep); color: var(--pink-dark); }
-  .toggle-btn.active-completed { background: var(--yellow);    border-color: var(--yellow-deep); color: #7a5010; }
-  .toggle-btn.active-unlocked  { background: var(--mint);     border-color: var(--mint-deep);   color: #1a6040; }
-  .toggle-btn.active-locked    { background: var(--locked-bg);border-color: var(--pink-deep);   color: var(--locked-text); }
-  .toggle-btn.active-fav       { background: #ffd6e8; border-color: #f090b8; color: #b02060; }
-  .toggle-btn.active-ooglay    { background: #eee; border-color: #ccc; color: #666; }
-  .modal-close {
-    position: absolute;
-    top: 14px; right: 14px;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 50%;
-    width: 28px; height: 28px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    color: var(--text-light);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.13s;
-  }
-  .modal-close:hover { background: var(--pink-main); color: var(--pink-dark); border-color: var(--pink-deep); }
-  .modal-save {
-    width: 100%;
-    padding: 11px;
-    background: linear-gradient(135deg, var(--pink-dark), #c04060);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    box-shadow: 0 4px 14px rgba(200,80,100,0.3);
-    margin-top: 6px;
-  }
-  .modal-save:hover { box-shadow: 0 6px 20px rgba(200,80,100,0.4); transform: translateY(-1px); }
-  .dot-Brown  { background: #8B5E3C; }
-  .dot-Black  { background: #333; }
-  .dot-Blue   { background: #5b8fd4; }
-  .dot-Green  { background: #5aaa6a; }
-  .dot-Orange { background: #f0922a; }
-  .dot-Pink   { background: #f090b8; }
-  .dot-Purple { background: #9a6ad4; }
-  .dot-Rainbow{ background: linear-gradient(90deg,#f66,#f90,#ff0,#6a6,#66f,#a6f); }
-  .dot-Red    { background: #d44040; }
-  .dot-Tan    { background: #c8a070; }
-  .dot-Teal   { background: #30b8c0; }
-  .dot-White  { background: #eee; border: 1px solid #ccc; }
-  .dot-Yellow { background: #e8c830; }
-  /* ── Photo queue tab ── */
-  .photo-queue-wrap { padding-bottom: 12px; }
-  .photo-queue-intro {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.83rem;
-    color: var(--text-mid);
-    font-weight: 600;
-  }
-  .photo-queue-intro .pq-count {
-    font-family: 'Fraunces', serif;
-    font-size: 1.5rem;
-    color: var(--pink-dark);
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .photo-queue-group { margin-bottom: 28px; }
-  .photo-queue-group h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .photo-queue-group h2 .pq-group-count {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 700;
-    background: var(--border);
-    color: var(--text-mid);
-    padding: 2px 9px;
-    border-radius: 10px;
-  }
-  .photo-queue-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 8px;
-  }
-  .pq-item {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    transition: box-shadow 0.15s, border-color 0.15s;
-  }
-  .pq-item:hover { border-color: var(--pink-deep); box-shadow: 0 2px 12px var(--shadow-soft); }
-  .pq-item-name {
-    font-family: 'Fraunces', serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.2;
-  }
-  .pq-item-oven {
-    font-size: 0.67rem;
-    color: var(--text-light);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .pq-item-filename {
-    font-size: 0.65rem;
-    color: var(--text-light);
-    font-family: monospace;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 2px 6px;
-    margin-top: 4px;
-    word-break: break-all;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    user-select: none;
-  }
-  .pq-item-filename:hover { background: var(--yellow); color: #7a5010; border-color: var(--yellow-deep); }
-  .pq-item-filename.copied { background: var(--mint); color: #1a6040; border-color: var(--mint-deep); }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 6px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--pink-deep); }
-</style>
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(circle at 8% 12%, #F8CED044 0%, transparent 28%),
+        radial-gradient(circle at 92% 8%, #FEF0C255 0%, transparent 24%),
+        radial-gradient(circle at 50% 95%, #C2F3D333 0%, transparent 30%),
+        radial-gradient(circle at 85% 60%, #FEDACA33 0%, transparent 22%),
+        radial-gradient(circle at 15% 75%, #C2F3F122 0%, transparent 20%);
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      background: linear-gradient(135deg, #F8CED0 0%, #FEDACA 45%, #FEF0C2 100%);
+      border-bottom: 2px solid var(--border-mid);
+      padding: 22px 32px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 20px var(--shadow-pink);
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.45) 1.5px, transparent 1.5px);
+      background-size: 22px 22px;
+      opacity: 0.5;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+    }
+
+    .header-icon {
+      font-size: 2.6rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 6px rgba(200, 80, 100, 0.2));
+      animation: bob 3s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    .header-title h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+    }
+
+    .header-title p {
+      font-size: 0.78rem;
+      color: var(--text-mid);
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 8px 18px;
+      text-align: center;
+      box-shadow: 0 2px 10px var(--shadow-soft);
+      transition: transform 0.15s;
+    }
+
+    .stat-pill:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-pill .num {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
+      color: var(--pink-dark);
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .stat-pill .lbl {
+      font-size: 0.63rem;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .tabs {
+      position: relative;
+      z-index: 9;
+      background: var(--white);
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      padding: 0 28px;
+      gap: 2px;
+      box-shadow: 0 1px 8px var(--shadow-soft);
+    }
+
+    .tab-btn {
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-light);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 14px 20px 11px;
+      cursor: pointer;
+      transition: all 0.18s;
+      letter-spacing: 0.3px;
+      position: relative;
+      top: 2px;
+    }
+
+    .tab-btn:hover {
+      color: var(--pink-dark);
+    }
+
+    .tab-btn.active {
+      color: var(--pink-dark);
+      border-bottom-color: var(--pink-dark);
+    }
+
+    .main {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      height: calc(100vh - 138px);
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 255px;
+      min-width: 220px;
+      background: var(--white);
+      border-right: 2px solid var(--border);
+      overflow-y: auto;
+      padding: 18px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section h3 {
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: var(--text-light);
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 8px 10px 8px 30px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.83rem;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .search-box:focus {
+      border-color: var(--pink-deep);
+      box-shadow: 0 0 0 3px rgba(248, 206, 208, 0.5);
+    }
+
+    .search-box::placeholder {
+      color: var(--text-light);
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      font-size: 0.73rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border-mid);
+      background: var(--surface);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.13s;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      border-color: var(--pink-deep);
+      color: var(--pink-dark);
+      background: rgba(248, 206, 208, 0.25);
+    }
+
+    .chip.active {
+      background: var(--pink-dark);
+      border-color: var(--pink-dark);
+      color: white;
+      box-shadow: 0 2px 8px var(--shadow-pink);
+    }
+
+    .range-inputs {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .range-inputs input {
+      width: 68px;
+      padding: 6px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: 'Nunito', sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .range-inputs input:focus {
+      border-color: var(--pink-deep);
+    }
+
+    .range-inputs span {
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-mid);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .toggle-item input[type=checkbox] {
+      accent-color: var(--pink-dark);
+      width: 15px;
+      height: 15px;
+    }
+
+    select.filter-select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    select.filter-select:focus {
+      border-color: var(--pink-deep);
+    }
+
+    .clear-btn {
+      width: 100%;
+      padding: 8px;
+      background: none;
+      border: 1.5px dashed var(--border-mid);
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.13s;
+    }
+
+    .clear-btn:hover {
+      border-color: var(--pink-deep);
+      color: var(--pink-dark);
+      background: rgba(248, 206, 208, 0.2);
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px 24px;
+      background: var(--off-white);
+    }
+
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .results-count {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    .sort-select {
+      padding: 6px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    .recipe-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 15px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* stripe only shows on cards WITHOUT an image (image cards use the image border instead) */
+    .recipe-card.no-img-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .recipe-card.no-img-card.completed::before {
+      background: linear-gradient(90deg, var(--yellow-deep), var(--peach-deep));
+    }
+
+    .recipe-card.no-img-card.unlocked-not-done::before {
+      background: linear-gradient(90deg, var(--mint-deep), var(--aqua-deep));
+    }
+
+    .recipe-card.no-img-card.locked::before {
+      background: linear-gradient(90deg, var(--border), var(--border-mid));
+    }
+
+    .recipe-card:hover {
+      box-shadow: 0 6px 24px var(--shadow-soft), 0 0 0 2px var(--pink-main);
+      transform: translateY(-2px);
+      border-color: var(--pink-deep);
+    }
+
+    .card-name {
+      font-family: 'Fraunces', serif;
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .card-oven {
+      font-size: 0.7rem;
+      color: var(--text-light);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .meta-tag {
+      font-size: 0.67rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .tag-time {
+      background: var(--yellow);
+      color: #7a5010;
+    }
+
+    .tag-type {
+      background: var(--aqua);
+      color: #207070;
+    }
+
+    .tag-color {
+      background: var(--white);
+      border: 1.5px solid var(--border-mid);
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-holiday {
+      background: var(--peach);
+      color: #904010;
+    }
+
+    .tag-season {
+      background: var(--mint);
+      color: #206040;
+    }
+
+    .tag-other {
+      background: #ede8f8;
+      color: #5a3aaa;
+    }
+
+    .color-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .card-profit {
+      font-size: 0.72rem;
+      color: var(--text-light);
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 0.62rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .status-completed {
+      background: var(--completed-bg);
+      color: var(--completed-text);
+    }
+
+    .status-unlocked {
+      background: var(--unlocked-bg);
+      color: var(--unlocked-text);
+    }
+
+    .status-locked {
+      background: var(--locked-bg);
+      color: var(--locked-text);
+    }
+
+    /* ── Card image area ── */
+    .card-img-wrap {
+      width: calc(100% + 30px);
+      margin: -14px -15px 0;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 14px 14px 0 0;
+      border-bottom: 1.5px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+
+    .recipe-card:hover .card-img-wrap img {
+      transform: scale(1.04);
+    }
+
+    .card-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 2.8rem;
+    }
+
+    .card-img-placeholder.no-image {
+      background: #fff8f9;
+    }
+
+    .card-img-placeholder.is-locked {
+      background: #fce8ec;
+    }
+
+    .card-img-placeholder span {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .no-image span {
+      color: var(--text-light);
+    }
+
+    .is-locked span {
+      color: var(--locked-text);
+    }
+
+    /* when image present, status badge sits over the image */
+    .card-img-wrap+.status-badge-wrap .status-badge {
+      top: auto;
+      right: auto;
+      position: static;
+    }
+
+    .status-badge-wrap {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .ovens-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+      gap: 14px;
+    }
+
+    .oven-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+
+    .oven-card:hover {
+      box-shadow: 0 4px 18px var(--shadow-soft);
+      transform: translateY(-2px);
+    }
+
+    .oven-name {
+      font-family: 'Fraunces', serif;
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .oven-count-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.77rem;
+      color: var(--text-mid);
+      font-weight: 600;
+    }
+
+    .oven-count-row strong {
+      color: var(--pink-dark);
+    }
+
+    .progress-bar-wrap {
+      background: var(--border);
+      border-radius: 6px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--pink-deep), var(--yellow-deep));
+      transition: width 0.4s ease;
+    }
+
+    .progress-label {
+      font-size: 0.7rem;
+      color: var(--text-light);
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 70px 20px;
+      color: var(--text-light);
+    }
+
+    .empty-state .emoji {
+      font-size: 3.2rem;
+      margin-bottom: 14px;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(58, 32, 48, 0.35);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      max-width: 470px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(180, 80, 100, 0.18);
+      position: relative;
+      border: 2px solid var(--border);
+      animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(0.92);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-strip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      border-radius: 20px 20px 0 0;
+      background: linear-gradient(90deg, var(--pink-main), var(--peach), var(--yellow));
+    }
+
+    .modal h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.45rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+      margin-top: 8px;
+    }
+
+    .modal-oven {
+      font-size: 0.72rem;
+      color: var(--text-light);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 18px;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1.5px solid var(--border);
+    }
+
+    .modal-field label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: var(--text-light);
+      display: block;
+      margin-bottom: 2px;
+      font-weight: 700;
+    }
+
+    .modal-field span {
+      font-size: 0.88rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .modal-divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 0 0 16px;
+    }
+
+    .modal-section-label {
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-light);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-toggles {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .toggle-btn {
+      padding: 7px 15px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border-mid);
+      background: var(--surface);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.13s;
+    }
+
+    .toggle-btn:hover {
+      border-color: var(--pink-deep);
+      color: var(--pink-dark);
+    }
+
+    .toggle-btn.active-completed {
+      background: var(--yellow);
+      border-color: var(--yellow-deep);
+      color: #7a5010;
+    }
+
+    .toggle-btn.active-unlocked {
+      background: var(--mint);
+      border-color: var(--mint-deep);
+      color: #1a6040;
+    }
+
+    .toggle-btn.active-locked {
+      background: var(--locked-bg);
+      border-color: var(--pink-deep);
+      color: var(--locked-text);
+    }
+
+    .toggle-btn.active-fav {
+      background: #ffd6e8;
+      border-color: #f090b8;
+      color: #b02060;
+    }
+
+    .toggle-btn.active-ooglay {
+      background: #eee;
+      border-color: #ccc;
+      color: #666;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.13s;
+    }
+
+    .modal-close:hover {
+      background: var(--pink-main);
+      color: var(--pink-dark);
+      border-color: var(--pink-deep);
+    }
+
+    .modal-save {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, var(--pink-dark), #c04060);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 4px 14px rgba(200, 80, 100, 0.3);
+      margin-top: 6px;
+    }
+
+    .modal-save:hover {
+      box-shadow: 0 6px 20px rgba(200, 80, 100, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .dot-Brown {
+      background: #8B5E3C;
+    }
+
+    .dot-Black {
+      background: #333;
+    }
+
+    .dot-Blue {
+      background: #5b8fd4;
+    }
+
+    .dot-Green {
+      background: #5aaa6a;
+    }
+
+    .dot-Orange {
+      background: #f0922a;
+    }
+
+    .dot-Pink {
+      background: #f090b8;
+    }
+
+    .dot-Purple {
+      background: #9a6ad4;
+    }
+
+    .dot-Rainbow {
+      background: linear-gradient(90deg, #f66, #f90, #ff0, #6a6, #66f, #a6f);
+    }
+
+    .dot-Red {
+      background: #d44040;
+    }
+
+    .dot-Tan {
+      background: #c8a070;
+    }
+
+    .dot-Teal {
+      background: #30b8c0;
+    }
+
+    .dot-White {
+      background: #eee;
+      border: 1px solid #ccc;
+    }
+
+    .dot-Yellow {
+      background: #e8c830;
+    }
+
+    /* ── Photo queue tab ── */
+    .photo-queue-wrap {
+      padding-bottom: 12px;
+    }
+
+    .photo-queue-intro {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.83rem;
+      color: var(--text-mid);
+      font-weight: 600;
+    }
+
+    .photo-queue-intro .pq-count {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      color: var(--pink-dark);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .photo-queue-group {
+      margin-bottom: 28px;
+    }
+
+    .photo-queue-group h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photo-queue-group h2 .pq-group-count {
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--border);
+      color: var(--text-mid);
+      padding: 2px 9px;
+      border-radius: 10px;
+    }
+
+    .photo-queue-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .pq-item {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+
+    .pq-item:hover {
+      border-color: var(--pink-deep);
+      box-shadow: 0 2px 12px var(--shadow-soft);
+    }
+
+    .pq-item-name {
+      font-family: 'Fraunces', serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .pq-item-oven {
+      font-size: 0.67rem;
+      color: var(--text-light);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .pq-item-filename {
+      font-size: 0.65rem;
+      color: var(--text-light);
+      font-family: monospace;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 6px;
+      margin-top: 4px;
+      word-break: break-all;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+
+    .pq-item-filename:hover {
+      background: var(--yellow);
+      color: #7a5010;
+      border-color: var(--yellow-deep);
+    }
+
+    .pq-item-filename.copied {
+      background: var(--mint);
+      color: #1a6040;
+      border-color: var(--mint-deep);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-mid);
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--pink-deep);
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div class="header-left">
-    <div class="header-icon">🧁</div>
-    <div class="header-title">
-      <h1>Bakery Story</h1>
-      <p>Recipe Tracker &amp; Finder</p>
-    </div>
-  </div>
-  <div class="header-stats" id="headerStats"></div>
-</header>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('recipes')">🍰 Recipes</button>
-  <button class="tab-btn" onclick="switchTab('ovens')">🔥 Ovens</button>
-  <button class="tab-btn" onclick="switchTab('photos')">📷 Needs Photo</button>
-</div>
-
-<div class="main" id="mainContainer">
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-section">
-      <h3>Search</h3>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input class="search-box" type="text" id="searchInput" placeholder="Recipe or oven name…" oninput="applyFilters()">
+  <header>
+    <div class="header-left">
+      <div class="header-icon">🧁</div>
+      <div class="header-title">
+        <h1>Bakery Story</h1>
+        <p>Recipe Tracker &amp; Finder</p>
       </div>
     </div>
-    <div class="sidebar-section">
-      <h3>Status</h3>
-      <div class="filter-chips" id="statusChips">
-        <span class="chip" data-status="completed" onclick="toggleStatus(this)">⭐ Completed</span>
-        <span class="chip" data-status="unlocked"  onclick="toggleStatus(this)">🔓 Unlocked</span>
-        <span class="chip" data-status="locked"    onclick="toggleStatus(this)">🔒 Locked</span>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Ovens I Own</h3>
-      <label class="toggle-item">
-        <input type="checkbox" id="ownedOnly" onchange="applyFilters()">
-        Only show ovens I have
-      </label>
-      <div style="margin-top:8px;font-size:0.75rem;color:var(--text-light);font-weight:700;margin-bottom:4px;">Number of ovens</div>
-      <div class="range-inputs">
-        <input type="number" id="minOvens" placeholder="Min" min="0" oninput="applyFilters()">
-        <span>–</span>
-        <input type="number" id="maxOvens" placeholder="Max" min="0" oninput="applyFilters()">
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Cook Time (hours)</h3>
-      <div class="range-inputs">
-        <input type="number" id="minHours" placeholder="Min" min="0" oninput="applyFilters()">
-        <span>–</span>
-        <input type="number" id="maxHours" placeholder="Max" min="0" oninput="applyFilters()">
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Color</h3>
-      <div class="filter-chips" id="colorChips"></div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Holiday</h3>
-      <div class="filter-chips" id="holidayChips"></div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Season</h3>
-      <div class="filter-chips" id="seasonChips"></div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Food Type</h3>
-      <select class="filter-select" id="typeSelect" onchange="applyFilters()">
-        <option value="">All types</option>
-      </select>
-    </div>
-    <div class="sidebar-section">
-      <h3>Other Tags</h3>
-      <div class="filter-chips" id="otherTagChips"></div>
-    </div>
-    <button class="clear-btn" onclick="clearFilters()">✕ Clear all filters</button>
+    <div class="header-stats" id="headerStats"></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('recipes')">🍰 Recipes</button>
+    <button class="tab-btn" onclick="switchTab('ovens')">🔥 Ovens</button>
+    <button class="tab-btn" onclick="switchTab('photos')">📷 Needs Photo</button>
   </div>
 
-  <div class="content" id="contentArea">
-    <div class="results-bar">
-      <span class="results-count" id="resultsCount"></span>
-      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
-        <option value="name">Sort: Name A–Z</option>
-        <option value="oven">Sort: Oven</option>
-        <option value="hours_asc">Sort: Quickest first</option>
-        <option value="hours_desc">Sort: Longest first</option>
-        <option value="profit">Sort: Best profit/hr</option>
-        <option value="status">Sort: Status</option>
-      </select>
+  <div class="main" id="mainContainer">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3>Search</h3>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-box" type="text" id="searchInput" placeholder="Recipe or oven name…"
+            oninput="applyFilters()">
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Status</h3>
+        <div class="filter-chips" id="statusChips">
+          <span class="chip" data-status="completed" onclick="toggleStatus(this)">⭐ Completed</span>
+          <span class="chip" data-status="unlocked" onclick="toggleStatus(this)">🔓 Unlocked</span>
+          <span class="chip" data-status="locked" onclick="toggleStatus(this)">🔒 Locked</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Ovens I Own</h3>
+        <label class="toggle-item">
+          <input type="checkbox" id="ownedOnly" onchange="applyFilters()">
+          Only show ovens I have
+        </label>
+        <div style="margin-top:8px;font-size:0.75rem;color:var(--text-light);font-weight:700;margin-bottom:4px;">Number
+          of ovens</div>
+        <div class="range-inputs">
+          <input type="number" id="minOvens" placeholder="Min" min="0" oninput="applyFilters()">
+          <span>–</span>
+          <input type="number" id="maxOvens" placeholder="Max" min="0" oninput="applyFilters()">
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Cook Time (hours)</h3>
+        <div class="range-inputs">
+          <input type="number" id="minHours" placeholder="Min" min="0" oninput="applyFilters()">
+          <span>–</span>
+          <input type="number" id="maxHours" placeholder="Max" min="0" oninput="applyFilters()">
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Color</h3>
+        <div class="filter-chips" id="colorChips"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Holiday</h3>
+        <div class="filter-chips" id="holidayChips"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Season</h3>
+        <div class="filter-chips" id="seasonChips"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Food Type</h3>
+        <select class="filter-select" id="typeSelect" onchange="applyFilters()">
+          <option value="">All types</option>
+        </select>
+      </div>
+      <div class="sidebar-section">
+        <h3>Other Tags</h3>
+        <div class="filter-chips" id="otherTagChips"></div>
+      </div>
+      <button class="clear-btn" onclick="clearFilters()">✕ Clear all filters</button>
     </div>
-    <div id="recipeGrid" class="recipe-grid"></div>
-    <div id="ovenGrid"   class="ovens-grid" style="display:none"></div>
-    <div id="photoGrid"  class="photo-queue-wrap" style="display:none"></div>
-  </div>
-</div>
 
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modalBox">
-    <div class="modal-strip"></div>
-    <button class="modal-close" onclick="closeModalBtn()">✕</button>
-    <h2 id="modalName"></h2>
-    <div class="modal-oven" id="modalOven"></div>
-    <div class="modal-grid" id="modalGrid"></div>
-    <hr class="modal-divider">
-    <div class="modal-section-label">Update Status</div>
-    <div class="modal-toggles">
-      <button class="toggle-btn" id="btnCompleted" onclick="setStatus('completed')">⭐ Completed (4★)</button>
-      <button class="toggle-btn" id="btnUnlocked"  onclick="setStatus('unlocked')">🔓 Unlocked</button>
-      <button class="toggle-btn" id="btnLocked"    onclick="setStatus('locked')">🔒 Locked</button>
+    <div class="content" id="contentArea">
+      <div class="results-bar">
+        <span class="results-count" id="resultsCount"></span>
+        <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+          <option value="name">Sort: Name A–Z</option>
+          <option value="oven">Sort: Oven</option>
+          <option value="hours_asc">Sort: Quickest first</option>
+          <option value="hours_desc">Sort: Longest first</option>
+          <option value="profit">Sort: Best profit/hr</option>
+          <option value="status">Sort: Status</option>
+        </select>
+      </div>
+      <div id="recipeGrid" class="recipe-grid"></div>
+      <div id="ovenGrid" class="ovens-grid" style="display:none"></div>
+      <div id="photoGrid" class="photo-queue-wrap" style="display:none"></div>
     </div>
-    <button class="modal-save" onclick="saveModal()">Save Changes</button>
   </div>
-</div>
 
-<script src="data.js"></script>
-<script>
-// IMAGE_SET is written by build.js — a Set of filenames that actually exist.
-// Falls back to empty set if not present (graceful degradation).
-const IMG_SET = (typeof IMAGE_SET !== 'undefined') ? new Set(IMAGE_SET) : new Set();
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="modalBox">
+      <div class="modal-strip"></div>
+      <button class="modal-close" onclick="closeModalBtn()">✕</button>
+      <h2 id="modalName"></h2>
+      <div class="modal-oven" id="modalOven"></div>
+      <div class="modal-grid" id="modalGrid"></div>
+      <hr class="modal-divider">
+      <div class="modal-section-label">Update Status</div>
+      <div class="modal-toggles">
+        <button class="toggle-btn" id="btnCompleted" onclick="setStatus('completed')">⭐ Completed (4★)</button>
+        <button class="toggle-btn" id="btnUnlocked" onclick="setStatus('unlocked')">🔓 Unlocked</button>
+        <button class="toggle-btn" id="btnLocked" onclick="setStatus('locked')">🔒 Locked</button>
+      </div>
+      <button class="modal-save" onclick="saveModal()">Save Changes</button>
+    </div>
+  </div>
 
-function hasImg(r) {
-  const sanitize = s => s.toLowerCase().replace(/[''']/g,'').replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-  const base = `${sanitize(r.oven)}_${sanitize(r.name)}`;
-  return IMG_SET.has(base+'.png');
-}
-function imgKey(r, ext) {
-  const sanitize = s => s.toLowerCase().replace(/[''']/g,'').replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-  return `images/recipes/${sanitize(r.oven)}_${sanitize(r.name)}.${ext}`;
-}
+  <script src="data.js"></script>
+  <script>
+    // IMAGE_SET is written by build.js — a Set of filenames that actually exist.
+    // Falls back to empty set if not present (graceful degradation).
+    const IMG_SET = (typeof IMAGE_SET !== 'undefined') ? new Set(IMAGE_SET) : new Set();
 
-let activeTab='recipes';
-let activeStatuses=new Set(),activeColors=new Set(),activeHolidays=new Set(),activeSeasons=new Set(),activeOtherTags=new Set();
-let modalIndex=null,modalPending={};
-let overrides={};
-try{overrides=JSON.parse(localStorage.getItem('bs_overrides')||'{}');}catch(e){}
-
-function getRecipe(i){return{...RECIPES[i],...(overrides[i]||{})};}
-
-function init(){
-  buildChips('colorChips',['Black','Blue','Brown','Green','Orange','Pink','Purple','Rainbow','Red','Tan','Teal','White','Yellow'],activeColors,toggleColor);
-  buildChips('holidayChips',['Christmas','Easter','Halloween','Independence Day','St Patricks Day','Thanksgiving',"Valentine's Day"],activeHolidays,toggleHoliday);
-  buildChips('seasonChips',['Fall','Spring','Summer','Winter'],activeSeasons,toggleSeason);
-  const ts=document.getElementById('typeSelect');
-  ['Breads','Brownies','Cake Pops','Candies/Sweets','Coffees','Cold Drinks','Cookies','Cupcakes','Donuts','Hot Chocolates','Hot Teas','Ice Creams','Muffins','Multi Layer Cakes','Pancakes','Pastries','Pies','Puddings/Parfaits','Savory','Single Layer Cakes','Smoothies & Milkshakes','Tarts','Waffles'].forEach(t=>{
-    const o=document.createElement('option');o.value=t;o.textContent=t;ts.appendChild(o);
-  });
-  const allTags=new Set();
-  RECIPES.forEach(r=>{if(r.otherTags)r.otherTags.split('|').filter(Boolean).forEach(t=>allTags.add(t.trim()));});
-  const sortedTags=[...allTags].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
-  buildChips('otherTagChips',sortedTags,activeOtherTags,toggleOtherTag,(tag)=>tag==='<3'?'❤️':tag==='ooglay'?'😬 Ooglay':tag);
-  updateStats();applyFilters();
-}
-
-function buildChips(id,items,set,fn,labelFn){
-  const el=document.getElementById(id);
-  items.forEach(item=>{
-    const c=document.createElement('span');
-    c.className='chip';c.textContent=labelFn?labelFn(item):item;c.dataset.value=item;
-    c.onclick=()=>fn(c,item,set);el.appendChild(c);
-  });
-}
-
-function toggleColor(el,val,set){toggleSet(el,val,set);applyFilters();}
-function toggleHoliday(el,val,set){toggleSet(el,val,set);applyFilters();}
-function toggleSeason(el,val,set){toggleSet(el,val,set);applyFilters();}
-function toggleOtherTag(el,val,set){toggleSet(el,val,set);applyFilters();}
-function toggleSet(el,val,set){
-  if(set.has(val)){set.delete(val);el.classList.remove('active');}
-  else{set.add(val);el.classList.add('active');}
-}
-function toggleStatus(el){
-  const val=el.dataset.status;
-  if(activeStatuses.has(val)){activeStatuses.delete(val);el.classList.remove('active');}
-  else{activeStatuses.add(val);el.classList.add('active');}
-  applyFilters();
-}
-
-function applyFilters(){
-  const search=document.getElementById('searchInput').value.toLowerCase().trim();
-  const ownedOnly=document.getElementById('ownedOnly').checked;
-  const minH=parseFloat(document.getElementById('minHours').value)||null;
-  const maxH=parseFloat(document.getElementById('maxHours').value)||null;
-  const minOvens=document.getElementById('minOvens').value!==''?parseInt(document.getElementById('minOvens').value):null;
-  const maxOvens=document.getElementById('maxOvens').value!==''?parseInt(document.getElementById('maxOvens').value):null;
-  const typeVal=document.getElementById('typeSelect').value;
-  const sort=document.getElementById('sortSelect').value;
-  const ovenCountMap={};
-  OVENS.forEach(o=>{ovenCountMap[o.name]=parseInt(o.totalOvens)||0;});
-  let results=RECIPES.map((r,i)=>({...r,...(overrides[i]||{}),_i:i}));
-  results=results.filter(r=>{
-    if(!r.name)return false;
-    if(search&&!r.name.toLowerCase().includes(search)&&!r.oven.toLowerCase().includes(search))return false;
-    if(activeStatuses.size>0){
-      const isCompleted=r.completed;
-      const isUnlocked=r.unlocked&&!r.completed;
-      const isLocked=!r.unlocked;
-      const matches=(activeStatuses.has('completed')&&isCompleted)||(activeStatuses.has('unlocked')&&isUnlocked)||(activeStatuses.has('locked')&&isLocked);
-      if(!matches)return false;
+    function hasImg(r) {
+      const sanitize = s => s.toLowerCase().replace(/[''']/g, '').replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+      const base = `${sanitize(r.oven)}_${sanitize(r.name)}`;
+      return IMG_SET.has(base + '.png');
     }
-    if(ownedOnly&&(ovenCountMap[r.oven]||0)===0)return false;
-    if(minOvens!==null&&(ovenCountMap[r.oven]||0)<minOvens)return false;
-    if(maxOvens!==null&&(ovenCountMap[r.oven]||0)>maxOvens)return false;
-    if(minH!==null&&(r.hoursNum==null||r.hoursNum<minH))return false;
-    if(maxH!==null&&(r.hoursNum==null||r.hoursNum>maxH))return false;
-    if(activeColors.size>0&&!activeColors.has(r.color))return false;
-    if(activeHolidays.size>0&&!activeHolidays.has(r.holiday))return false;
-    if(activeSeasons.size>0&&!activeSeasons.has(r.season))return false;
-    if(typeVal&&r.type!==typeVal)return false;
-    if(activeOtherTags.size>0){
-      const recipeTags=new Set((r.otherTags||'').split('|').map(t=>t.trim()).filter(Boolean));
-      if(![...activeOtherTags].every(t=>recipeTags.has(t)))return false;
+    function imgKey(r, ext) {
+      const sanitize = s => s.toLowerCase().replace(/[''']/g, '').replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+      return `images/recipes/${sanitize(r.oven)}_${sanitize(r.name)}.${ext}`;
     }
-    return true;
-  });
-  results.sort((a,b)=>{
-    if(sort==='name')return a.name.localeCompare(b.name);
-    if(sort==='oven')return a.oven.localeCompare(b.oven)||a.name.localeCompare(b.name);
-    if(sort==='hours_asc')return(a.hoursNum||999)-(b.hoursNum||999);
-    if(sort==='hours_desc')return(b.hoursNum||0)-(a.hoursNum||0);
-    if(sort==='profit')return(parseFloat(b.profitPerHour)||0)-(parseFloat(a.profitPerHour)||0);
-    if(sort==='status'){const sv=r=>r.completed?0:r.unlocked?1:2;return sv(a)-sv(b)||a.name.localeCompare(b.name);}
-    return 0;
-  });
-  renderRecipes(results);
-  document.getElementById('resultsCount').textContent=`${results.length.toLocaleString()} recipe${results.length!==1?'s':''} found`;
-}
 
-function renderRecipes(list){
-  const grid=document.getElementById('recipeGrid');
-  if(list.length===0){grid.innerHTML='<div class="empty-state"><div class="emoji">🍽️</div><p>No recipes match your filters!</p></div>';return;}
-  grid.innerHTML=list.map(r=>recipeCardHTML(r,r._i)).join('');
-}
+    let activeTab = 'recipes';
+    let activeStatuses = new Set(), activeColors = new Set(), activeHolidays = new Set(), activeSeasons = new Set(), activeOtherTags = new Set();
+    let modalIndex = null, modalPending = {};
+    let overrides = {};
+    try { overrides = JSON.parse(localStorage.getItem('bs_overrides') || '{}'); } catch (e) { }
 
-function recipeCardHTML(r,i){
-  const completed=r.completed,unlocked=r.unlocked;
-  const cardClass=completed?'completed':unlocked?'unlocked-not-done':'locked';
-  const badgeHTML=completed
-    ?`<span class="status-badge status-completed">⭐ Done</span>`
-    :unlocked
-      ?`<span class="status-badge status-unlocked">🔓 Unlocked</span>`
-      :`<span class="status-badge status-locked">🔒 Locked</span>`;
+    function getRecipe(i) { return { ...RECIPES[i], ...(overrides[i] || {}) }; }
 
-  // Use IMAGE_SET to decide instantly — no failed network requests
-  const imgExists=hasImg(r);
-  let imgHTML;
-  if(imgExists){
-    // Load png directly — no webp fallback needed
-    imgHTML=`<div class="card-img-wrap">
-      <img src="${imgKey(r,'png')}" alt="${r.name}">
+    function init() {
+      buildChips('colorChips', ['Black', 'Blue', 'Brown', 'Green', 'Orange', 'Pink', 'Purple', 'Rainbow', 'Red', 'Tan', 'Teal', 'White', 'Yellow'], activeColors, toggleColor);
+      buildChips('holidayChips', ['Christmas', 'Easter', 'Halloween', 'Independence Day', 'St Patricks Day', 'Thanksgiving', "Valentine's Day"], activeHolidays, toggleHoliday);
+      buildChips('seasonChips', ['Fall', 'Spring', 'Summer', 'Winter'], activeSeasons, toggleSeason);
+      const ts = document.getElementById('typeSelect');
+      ['Breads', 'Brownies', 'Cake Pops', 'Candies/Sweets', 'Coffees', 'Cold Drinks', 'Cookies', 'Cupcakes', 'Donuts', 'Hot Chocolates', 'Hot Teas', 'Ice Creams', 'Muffins', 'Multi Layer Cakes', 'Pancakes', 'Pastries', 'Pies', 'Puddings/Parfaits', 'Savory', 'Single Layer Cakes', 'Smoothies & Milkshakes', 'Tarts', 'Waffles'].forEach(t => {
+        const o = document.createElement('option'); o.value = t; o.textContent = t; ts.appendChild(o);
+      });
+      const allTags = new Set();
+      RECIPES.forEach(r => { if (r.otherTags) r.otherTags.split('|').filter(Boolean).forEach(t => allTags.add(t.trim())); });
+      const sortedTags = [...allTags].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+      buildChips('otherTagChips', sortedTags, activeOtherTags, toggleOtherTag, (tag) => tag === '<3' ? '❤️' : tag === 'ooglay' ? '😬 Ooglay' : tag);
+      updateStats(); applyFilters();
+    }
+
+    function buildChips(id, items, set, fn, labelFn) {
+      const el = document.getElementById(id);
+      items.forEach(item => {
+        const c = document.createElement('span');
+        c.className = 'chip'; c.textContent = labelFn ? labelFn(item) : item; c.dataset.value = item;
+        c.onclick = () => fn(c, item, set); el.appendChild(c);
+      });
+    }
+
+    function toggleColor(el, val, set) { toggleSet(el, val, set); applyFilters(); }
+    function toggleHoliday(el, val, set) { toggleSet(el, val, set); applyFilters(); }
+    function toggleSeason(el, val, set) { toggleSet(el, val, set); applyFilters(); }
+    function toggleOtherTag(el, val, set) { toggleSet(el, val, set); applyFilters(); }
+    function toggleSet(el, val, set) {
+      if (set.has(val)) { set.delete(val); el.classList.remove('active'); }
+      else { set.add(val); el.classList.add('active'); }
+    }
+    function toggleStatus(el) {
+      const val = el.dataset.status;
+      if (activeStatuses.has(val)) { activeStatuses.delete(val); el.classList.remove('active'); }
+      else { activeStatuses.add(val); el.classList.add('active'); }
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const ownedOnly = document.getElementById('ownedOnly').checked;
+      const minH = parseFloat(document.getElementById('minHours').value) || null;
+      const maxH = parseFloat(document.getElementById('maxHours').value) || null;
+      const minOvens = document.getElementById('minOvens').value !== '' ? parseInt(document.getElementById('minOvens').value) : null;
+      const maxOvens = document.getElementById('maxOvens').value !== '' ? parseInt(document.getElementById('maxOvens').value) : null;
+      const typeVal = document.getElementById('typeSelect').value;
+      const sort = document.getElementById('sortSelect').value;
+      const ovenCountMap = {};
+      OVENS.forEach(o => { ovenCountMap[o.name] = parseInt(o.totalOvens) || 0; });
+      let results = RECIPES.map((r, i) => ({ ...r, ...(overrides[i] || {}), _i: i }));
+      results = results.filter(r => {
+        if (!r.name) return false;
+        if (search && !r.name.toLowerCase().includes(search) && !r.oven.toLowerCase().includes(search)) return false;
+        if (activeStatuses.size > 0) {
+          const isCompleted = r.completed;
+          const isUnlocked = r.unlocked && !r.completed;
+          const isLocked = !r.unlocked;
+          const matches = (activeStatuses.has('completed') && isCompleted) || (activeStatuses.has('unlocked') && isUnlocked) || (activeStatuses.has('locked') && isLocked);
+          if (!matches) return false;
+        }
+        if (ownedOnly && (ovenCountMap[r.oven] || 0) === 0) return false;
+        if (minOvens !== null && (ovenCountMap[r.oven] || 0) < minOvens) return false;
+        if (maxOvens !== null && (ovenCountMap[r.oven] || 0) > maxOvens) return false;
+        if (minH !== null && (r.hoursNum == null || r.hoursNum < minH)) return false;
+        if (maxH !== null && (r.hoursNum == null || r.hoursNum > maxH)) return false;
+        if (activeColors.size > 0 && !activeColors.has(r.color)) return false;
+        if (activeHolidays.size > 0 && !activeHolidays.has(r.holiday)) return false;
+        if (activeSeasons.size > 0 && !activeSeasons.has(r.season)) return false;
+        if (typeVal && r.type !== typeVal) return false;
+        if (activeOtherTags.size > 0) {
+          const recipeTags = new Set((r.otherTags || '').split('|').map(t => t.trim()).filter(Boolean));
+          if (![...activeOtherTags].every(t => recipeTags.has(t))) return false;
+        }
+        return true;
+      });
+      results.sort((a, b) => {
+        if (sort === 'name') return a.name.localeCompare(b.name);
+        if (sort === 'oven') return a.oven.localeCompare(b.oven) || a.name.localeCompare(b.name);
+        if (sort === 'hours_asc') return (a.hoursNum || 999) - (b.hoursNum || 999);
+        if (sort === 'hours_desc') return (b.hoursNum || 0) - (a.hoursNum || 0);
+        if (sort === 'profit') return (parseFloat(b.profitPerHour) || 0) - (parseFloat(a.profitPerHour) || 0);
+        if (sort === 'status') { const sv = r => r.completed ? 0 : r.unlocked ? 1 : 2; return sv(a) - sv(b) || a.name.localeCompare(b.name); }
+        return 0;
+      });
+      renderRecipes(results);
+      document.getElementById('resultsCount').textContent = `${results.length.toLocaleString()} recipe${results.length !== 1 ? 's' : ''} found`;
+    }
+
+    function renderRecipes(list) {
+      const grid = document.getElementById('recipeGrid');
+      if (list.length === 0) { grid.innerHTML = '<div class="empty-state"><div class="emoji">🍽️</div><p>No recipes match your filters!</p></div>'; return; }
+      grid.innerHTML = list.map(r => recipeCardHTML(r, r._i)).join('');
+    }
+
+    function recipeCardHTML(r, i) {
+      const completed = r.completed, unlocked = r.unlocked;
+      const cardClass = completed ? 'completed' : unlocked ? 'unlocked-not-done' : 'locked';
+      const badgeHTML = completed
+        ? `<span class="status-badge status-completed">⭐ Done</span>`
+        : unlocked
+          ? `<span class="status-badge status-unlocked">🔓 Unlocked</span>`
+          : `<span class="status-badge status-locked">🔒 Locked</span>`;
+
+      // Use IMAGE_SET to decide instantly — no failed network requests
+      const imgExists = hasImg(r);
+      let imgHTML;
+      if (imgExists) {
+        // Load png directly — no webp fallback needed
+        imgHTML = `<div class="card-img-wrap">
+      <img src="${imgKey(r, 'png')}" alt="${r.name}">
     </div>`;
-  } else {
-    const placeholder=(!unlocked&&!completed)
-      ?`<div class="card-img-placeholder is-locked"><span style="font-size:2.4rem">🔒</span><span>Locked</span></div>`
-      :`<div class="card-img-placeholder no-image"><span style="font-size:2.4rem">🍰</span><span>No photo yet</span></div>`;
-    imgHTML=`<div class="card-img-wrap">${placeholder}</div>`;
-  }
+      } else {
+        const placeholder = (!unlocked && !completed)
+          ? `<div class="card-img-placeholder is-locked"><span style="font-size:2.4rem">🔒</span><span>Locked</span></div>`
+          : `<div class="card-img-placeholder no-image"><span style="font-size:2.4rem">🍰</span><span>No photo yet</span></div>`;
+        imgHTML = `<div class="card-img-wrap">${placeholder}</div>`;
+      }
 
-  let tags='';
-  if(r.hoursLabel)tags+=`<span class="meta-tag tag-time">⏱ ${r.hoursLabel}</span>`;
-  if(r.type)tags+=`<span class="meta-tag tag-type">${r.type}</span>`;
-  if(r.color)tags+=`<span class="meta-tag tag-color"><span class="color-dot dot-${r.color}"></span>${r.color}</span>`;
-  if(r.holiday)tags+=`<span class="meta-tag tag-holiday">${r.holiday}</span>`;
-  if(r.season)tags+=`<span class="meta-tag tag-season">${r.season}</span>`;
-  if(r.otherTags)(r.otherTags.split('|').filter(Boolean)).forEach(t=>{
-    const label=t==='<3'?'❤️':t==='ooglay'?'😬 Ooglay':t;
-    tags+=`<span class="meta-tag tag-other">${label}</span>`;
-  });
+      let tags = '';
+      if (r.hoursLabel) tags += `<span class="meta-tag tag-time">⏱ ${r.hoursLabel}</span>`;
+      if (r.type) tags += `<span class="meta-tag tag-type">${r.type}</span>`;
+      if (r.color) tags += `<span class="meta-tag tag-color"><span class="color-dot dot-${r.color}"></span>${r.color}</span>`;
+      if (r.holiday) tags += `<span class="meta-tag tag-holiday">${r.holiday}</span>`;
+      if (r.season) tags += `<span class="meta-tag tag-season">${r.season}</span>`;
+      if (r.otherTags) (r.otherTags.split('|').filter(Boolean)).forEach(t => {
+        const label = t === '<3' ? '❤️' : t === 'ooglay' ? '😬 Ooglay' : t;
+        tags += `<span class="meta-tag tag-other">${label}</span>`;
+      });
 
-  return`<div class="recipe-card ${cardClass}" onclick="openModal(${i})">
+      return `<div class="recipe-card ${cardClass}" onclick="openModal(${i})">
     ${imgHTML}
     <div class="status-badge-wrap">${badgeHTML}</div>
     <div class="card-name">${r.name}</div>
     <div class="card-oven">${r.oven}</div>
     <div class="card-meta">${tags}</div>
-    ${r.profitPerHour?`<div class="card-profit">💰 ${parseInt(r.profitPerHour).toLocaleString()} profit/hr</div>`:''}
+    ${r.profitPerHour ? `<div class="card-profit">💰 ${parseInt(r.profitPerHour).toLocaleString()} profit/hr</div>` : ''}
   </div>`;
-}
+    }
 
-function renderOvens(){
-  const grid=document.getElementById('ovenGrid');
-  const validOvens=OVENS.filter(o=>o.name&&parseInt(o.recipesTotal)>0);
-  validOvens.sort((a,b)=>a.name.localeCompare(b.name));
-  grid.innerHTML=validOvens.map(o=>{
-    const total=parseInt(o.recipesTotal)||0,done=parseInt(o.recipesCompleted)||0,left=total-done;
-    const pct=total>0?Math.round(done/total*100):0,owned=parseInt(o.totalOvens)||0;
-    return`<div class="oven-card">
+    function renderOvens() {
+      const grid = document.getElementById('ovenGrid');
+      const validOvens = OVENS.filter(o => o.name && parseInt(o.recipesTotal) > 0);
+      validOvens.sort((a, b) => a.name.localeCompare(b.name));
+      grid.innerHTML = validOvens.map(o => {
+        const total = parseInt(o.recipesTotal) || 0, done = parseInt(o.recipesCompleted) || 0, left = total - done;
+        const pct = total > 0 ? Math.round(done / total * 100) : 0, owned = parseInt(o.totalOvens) || 0;
+        return `<div class="oven-card">
       <div class="oven-name">${o.name}</div>
       <div class="oven-count-row">
         <span>Owned: <strong>${owned}</strong></span>
@@ -973,42 +1430,42 @@ function renderOvens(){
       <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
       <div class="progress-label"><span>${pct}% complete</span><span>${left} left</span></div>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function renderPhotoQueue(){
-  const wrap=document.getElementById('photoGrid');
-  const ovenCountMap={};
-  OVENS.forEach(o=>{ovenCountMap[o.name]=parseInt(o.totalOvens)||0;});
+    function renderPhotoQueue() {
+      const wrap = document.getElementById('photoGrid');
+      const ovenCountMap = {};
+      OVENS.forEach(o => { ovenCountMap[o.name] = parseInt(o.totalOvens) || 0; });
 
-  // Unlocked (including completed) recipes, oven owned, no photo
-  const needsPhoto=RECIPES.map((r,i)=>({...r,...(overrides[i]||{}),_i:i}))
-    .filter(r=>r.name && r.unlocked && !hasImg(r) && (ovenCountMap[r.oven]||0)>0);
+      // Unlocked (including completed) recipes, oven owned, no photo
+      const needsPhoto = RECIPES.map((r, i) => ({ ...r, ...(overrides[i] || {}), _i: i }))
+        .filter(r => r.name && r.unlocked && !hasImg(r) && (ovenCountMap[r.oven] || 0) > 0);
 
-  if(needsPhoto.length===0){
-    wrap.innerHTML='<div class="empty-state"><div class="emoji">🎉</div><p>Every unlocked recipe you own has a photo!</p></div>';
-    return;
-  }
+      if (needsPhoto.length === 0) {
+        wrap.innerHTML = '<div class="empty-state"><div class="emoji">🎉</div><p>Every unlocked recipe you own has a photo!</p></div>';
+        return;
+      }
 
-  // Group by oven, sorted alphabetically
-  const byOven={};
-  needsPhoto.forEach(r=>{
-    if(!byOven[r.oven])byOven[r.oven]=[];
-    byOven[r.oven].push(r);
-  });
-  const ovenNames=Object.keys(byOven).sort((a,b)=>a.localeCompare(b));
+      // Group by oven, sorted alphabetically
+      const byOven = {};
+      needsPhoto.forEach(r => {
+        if (!byOven[r.oven]) byOven[r.oven] = [];
+        byOven[r.oven].push(r);
+      });
+      const ovenNames = Object.keys(byOven).sort((a, b) => a.localeCompare(b));
 
-  const sanitizeDisplay=s=>s.replace(/[''']/g,'').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+      const sanitizeDisplay = s => s.replace(/[''']/g, '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
 
-  const groupsHTML=ovenNames.map(oven=>{
-    const items=byOven[oven].sort((a,b)=>a.name.localeCompare(b.name));
-const itemsHTML=items.map(r=>{
-const fname=`${sanitizeDisplay(r.oven)}_${sanitizeDisplay(r.name)}`;
-const badge=r.completed
-?`<span class="status-badge status-completed" style="position:static;font-size:0.6rem;padding:1px 6px">⭐ Done</span>`
-:`<span class="status-badge status-unlocked"  style="position:static;font-size:0.6rem;padding:1px 6px">🔓 Unlocked</span>`;
-const hoursLabel=r.hours===1?'1 hr':`${r.hours} hrs`;
-return`<div class="pq-item">
+      const groupsHTML = ovenNames.map(oven => {
+        const items = byOven[oven].sort((a, b) => a.name.localeCompare(b.name));
+        const itemsHTML = items.map(r => {
+          const fname = `${sanitizeDisplay(r.oven)}_${sanitizeDisplay(r.name)}`;
+          const badge = r.completed
+            ? `<span class="status-badge status-completed" style="position:static;font-size:0.6rem;padding:1px 6px">⭐ Done</span>`
+            : `<span class="status-badge status-unlocked"  style="position:static;font-size:0.6rem;padding:1px 6px">🔓 Unlocked</span>`;
+          const hoursLabel = r.hours === 1 ? '1 hr' : `${r.hours} hrs`;
+          return `<div class="pq-item">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
           <div class="pq-item-name">${r.name}</div>${badge}
         </div>
@@ -1016,133 +1473,134 @@ return`<div class="pq-item">
         <div class="pq-item-time">⏱ ${hoursLabel}</div>
         <div class="pq-item-filename" title="Click to copy filename" onclick="copyFilename(this,'${fname}.png')">${fname}.png</div>
       </div>`;
-    }).join('');
-    return`<div class="photo-queue-group">
+        }).join('');
+        return `<div class="photo-queue-group">
       <h2>🔥 ${oven} <span class="pq-group-count">${items.length}</span></h2>
       <div class="photo-queue-list">${itemsHTML}</div>
     </div>`;
-  }).join('');
+      }).join('');
 
-  wrap.innerHTML=`
+      wrap.innerHTML = `
     <div class="photo-queue-intro">
       <div class="pq-count">${needsPhoto.length}</div>
       <div>unlocked recipes you own the oven for are still missing a photo. Each card shows the filename to use when saving the image.</div>
     </div>
     ${groupsHTML}`;
-}
+    }
 
-function openModal(i){
-  modalIndex=i;modalPending={};
-  const r=getRecipe(i);
-  document.getElementById('modalName').textContent=r.name;
-  document.getElementById('modalOven').textContent=r.oven;
-  const fields=[
-    ['Cook Time',r.hoursLabel||'—'],
-    ['Cost',r.cost?`${parseInt(r.cost).toLocaleString()} coins`:'—'],
-    ['Revenue',r.revenue?`${parseInt(r.revenue).toLocaleString()} coins`:'—'],
-    ['Profit/hr',r.profitPerHour?`${parseInt(r.profitPerHour).toLocaleString()}`:'—'],
-    ['Type',r.type||'—'],['Color',r.color||'—'],['Holiday',r.holiday||'—'],['Season',r.season||'—'],
-  ];
-  document.getElementById('modalGrid').innerHTML=fields.map(([l,v])=>`<div class="modal-field"><label>${l}</label><span>${v}</span></div>`).join('');
-  document.getElementById('btnCompleted').className='toggle-btn'+(r.completed?' active-completed':'');
-  document.getElementById('btnUnlocked').className='toggle-btn'+(r.unlocked&&!r.completed?' active-unlocked':'');
-  document.getElementById('btnLocked').className='toggle-btn'+(!r.unlocked?' active-locked':'');
-  document.getElementById('modalOverlay').classList.add('open');
-}
+    function openModal(i) {
+      modalIndex = i; modalPending = {};
+      const r = getRecipe(i);
+      document.getElementById('modalName').textContent = r.name;
+      document.getElementById('modalOven').textContent = r.oven;
+      const fields = [
+        ['Cook Time', r.hoursLabel || '—'],
+        ['Cost', r.cost ? `${parseInt(r.cost).toLocaleString()} coins` : '—'],
+        ['Revenue', r.revenue ? `${parseInt(r.revenue).toLocaleString()} coins` : '—'],
+        ['Profit/hr', r.profitPerHour ? `${parseInt(r.profitPerHour).toLocaleString()}` : '—'],
+        ['Type', r.type || '—'], ['Color', r.color || '—'], ['Holiday', r.holiday || '—'], ['Season', r.season || '—'],
+      ];
+      document.getElementById('modalGrid').innerHTML = fields.map(([l, v]) => `<div class="modal-field"><label>${l}</label><span>${v}</span></div>`).join('');
+      document.getElementById('btnCompleted').className = 'toggle-btn' + (r.completed ? ' active-completed' : '');
+      document.getElementById('btnUnlocked').className = 'toggle-btn' + (r.unlocked && !r.completed ? ' active-unlocked' : '');
+      document.getElementById('btnLocked').className = 'toggle-btn' + (!r.unlocked ? ' active-locked' : '');
+      document.getElementById('modalOverlay').classList.add('open');
+    }
 
-function setStatus(s){
-  if(s==='completed'){modalPending.completed=true;modalPending.unlocked=true;}
-  else if(s==='unlocked'){modalPending.completed=false;modalPending.unlocked=true;}
-  else{modalPending.completed=false;modalPending.unlocked=false;}
-  document.getElementById('btnCompleted').className='toggle-btn'+(s==='completed'?' active-completed':'');
-  document.getElementById('btnUnlocked').className='toggle-btn'+(s==='unlocked'?' active-unlocked':'');
-  document.getElementById('btnLocked').className='toggle-btn'+(s==='locked'?' active-locked':'');
-}
+    function setStatus(s) {
+      if (s === 'completed') { modalPending.completed = true; modalPending.unlocked = true; }
+      else if (s === 'unlocked') { modalPending.completed = false; modalPending.unlocked = true; }
+      else { modalPending.completed = false; modalPending.unlocked = false; }
+      document.getElementById('btnCompleted').className = 'toggle-btn' + (s === 'completed' ? ' active-completed' : '');
+      document.getElementById('btnUnlocked').className = 'toggle-btn' + (s === 'unlocked' ? ' active-unlocked' : '');
+      document.getElementById('btnLocked').className = 'toggle-btn' + (s === 'locked' ? ' active-locked' : '');
+    }
 
-function saveModal(){
-  if(modalIndex===null)return;
-  if(!overrides[modalIndex])overrides[modalIndex]={};
-  Object.assign(overrides[modalIndex],modalPending);
-  localStorage.setItem('bs_overrides',JSON.stringify(overrides));
-  updateStats();applyFilters();closeModalBtn();
-}
+    function saveModal() {
+      if (modalIndex === null) return;
+      if (!overrides[modalIndex]) overrides[modalIndex] = {};
+      Object.assign(overrides[modalIndex], modalPending);
+      localStorage.setItem('bs_overrides', JSON.stringify(overrides));
+      updateStats(); applyFilters(); closeModalBtn();
+    }
 
-function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalBtn();}
-function closeModalBtn(){document.getElementById('modalOverlay').classList.remove('open');modalIndex=null;}
+    function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalBtn(); }
+    function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('open'); modalIndex = null; }
 
-function updateStats(){
-  const all=RECIPES.map((r,i)=>getRecipe(i)).filter(r=>r.name);
-  const completed=all.filter(r=>r.completed).length;
-  const unlocked=all.filter(r=>r.unlocked&&!r.completed).length;
-  const withPhoto=all.filter(r=>r.unlocked&&hasImg(r)).length;
-  const unlockedTotal=all.filter(r=>r.unlocked).length;
-  document.getElementById('headerStats').innerHTML=`
+    function updateStats() {
+      const all = RECIPES.map((r, i) => getRecipe(i)).filter(r => r.name);
+      const completed = all.filter(r => r.completed).length;
+      const unlocked = all.filter(r => r.unlocked && !r.completed).length;
+      const withPhoto = all.filter(r => r.unlocked && hasImg(r)).length;
+      const unlockedTotal = all.filter(r => r.unlocked).length;
+      document.getElementById('headerStats').innerHTML = `
     <div class="stat-pill"><div class="num">${completed.toLocaleString()}</div><div class="lbl">Completed</div></div>
     <div class="stat-pill"><div class="num">${unlocked.toLocaleString()}</div><div class="lbl">In Progress</div></div>
     <div class="stat-pill"><div class="num">${withPhoto.toLocaleString()} <span style="font-size:0.75rem;color:var(--text-light)">/ ${unlockedTotal.toLocaleString()}</span></div><div class="lbl">Have Photos</div></div>
     <div class="stat-pill"><div class="num">${all.length.toLocaleString()}</div><div class="lbl">Total Recipes</div></div>
   `;
-}
+    }
 
-function switchTab(tab){
-  activeTab=tab;
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active',['recipes','ovens','photos'][i]===tab);
-  });
-  const sidebar=document.getElementById('sidebar');
-  const recipeGrid=document.getElementById('recipeGrid');
-  const ovenGrid=document.getElementById('ovenGrid');
-  const photoGrid=document.getElementById('photoGrid');
-  const resultsBar=document.querySelector('.results-bar');
-  if(tab==='ovens'){
-    sidebar.style.display='none';recipeGrid.style.display='none';
-    ovenGrid.style.display='';photoGrid.style.display='none';
-    resultsBar.style.display='none';renderOvens();
-  } else if(tab==='photos'){
-    sidebar.style.display='none';recipeGrid.style.display='none';
-    ovenGrid.style.display='none';photoGrid.style.display='';
-    resultsBar.style.display='none';renderPhotoQueue();
-  } else {
-    sidebar.style.display='';recipeGrid.style.display='';
-    ovenGrid.style.display='none';photoGrid.style.display='none';
-    resultsBar.style.display='';applyFilters();
-  }
-}
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['recipes', 'ovens', 'photos'][i] === tab);
+      });
+      const sidebar = document.getElementById('sidebar');
+      const recipeGrid = document.getElementById('recipeGrid');
+      const ovenGrid = document.getElementById('ovenGrid');
+      const photoGrid = document.getElementById('photoGrid');
+      const resultsBar = document.querySelector('.results-bar');
+      if (tab === 'ovens') {
+        sidebar.style.display = 'none'; recipeGrid.style.display = 'none';
+        ovenGrid.style.display = ''; photoGrid.style.display = 'none';
+        resultsBar.style.display = 'none'; renderOvens();
+      } else if (tab === 'photos') {
+        sidebar.style.display = 'none'; recipeGrid.style.display = 'none';
+        ovenGrid.style.display = 'none'; photoGrid.style.display = '';
+        resultsBar.style.display = 'none'; renderPhotoQueue();
+      } else {
+        sidebar.style.display = ''; recipeGrid.style.display = '';
+        ovenGrid.style.display = 'none'; photoGrid.style.display = 'none';
+        resultsBar.style.display = ''; applyFilters();
+      }
+    }
 
-function clearFilters(){
-  document.getElementById('searchInput').value='';
-  document.getElementById('ownedOnly').checked=false;
-  document.getElementById('minHours').value='';
-  document.getElementById('maxHours').value='';
-  document.getElementById('minOvens').value='';
-  document.getElementById('maxOvens').value='';
-  document.getElementById('typeSelect').value='';
-  activeStatuses.clear();activeColors.clear();activeHolidays.clear();activeSeasons.clear();activeOtherTags.clear();
-  document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
-  document.querySelectorAll('#colorChips .chip,#holidayChips .chip,#seasonChips .chip,#otherTagChips .chip').forEach(c=>c.classList.remove('active'));
-  applyFilters();
-}
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('ownedOnly').checked = false;
+      document.getElementById('minHours').value = '';
+      document.getElementById('maxHours').value = '';
+      document.getElementById('minOvens').value = '';
+      document.getElementById('maxOvens').value = '';
+      document.getElementById('typeSelect').value = '';
+      activeStatuses.clear(); activeColors.clear(); activeHolidays.clear(); activeSeasons.clear(); activeOtherTags.clear();
+      document.querySelectorAll('#statusChips .chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#colorChips .chip,#holidayChips .chip,#seasonChips .chip,#otherTagChips .chip').forEach(c => c.classList.remove('active'));
+      applyFilters();
+    }
 
-function copyFilename(el, fname){
-  navigator.clipboard.writeText(fname).then(()=>{
-    el.textContent='✓ Copied!';
-    el.classList.add('copied');
-    setTimeout(()=>{
-      el.textContent=fname;
-      el.classList.remove('copied');
-    }, 1500);
-  }).catch(()=>{
-    // Fallback for browsers without clipboard API
-    const ta=document.createElement('textarea');
-    ta.value=fname;ta.style.position='fixed';ta.style.opacity='0';
-    document.body.appendChild(ta);ta.select();document.execCommand('copy');
-    document.body.removeChild(ta);
-    el.textContent='✓ Copied!';el.classList.add('copied');
-    setTimeout(()=>{el.textContent=fname;el.classList.remove('copied');},1500);
-  });
-}
+    function copyFilename(el, fname) {
+      navigator.clipboard.writeText(fname).then(() => {
+        el.textContent = '✓ Copied!';
+        el.classList.add('copied');
+        setTimeout(() => {
+          el.textContent = fname;
+          el.classList.remove('copied');
+        }, 1500);
+      }).catch(() => {
+        // Fallback for browsers without clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = fname; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        el.textContent = '✓ Copied!'; el.classList.add('copied');
+        setTimeout(() => { el.textContent = fname; el.classList.remove('copied'); }, 1500);
+      });
+    }
 
-init();
-</script>
+    init();
+  </script>
 </body>
+
 </html>
